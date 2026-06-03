@@ -28,11 +28,13 @@
                 <span class="nav-brand-icon">🌊</span>
                 <span class="nav-brand-text">沖繩輕旅</span>
             </div>
+            <!-- 右側：編輯模式切換與同步按鈕 -->
             <div class="nav-actions">
-                <button class="btn-icon btn-sync" title="同步至 GitHub" aria-label="同步至 GitHub">
-                    <span>☁️</span>
+                <button class="btn-action btn-sync" title="將修改同步到雲端">
+                    <span class="btn-icon">🔄</span>
+                    <span class="btn-text">同步至雲端</span>
                 </button>
-                <button class="btn-icon btn-edit" title="編輯模式" aria-label="切換編輯模式">
+                <button class="btn-action btn-edit" title="編輯行程" aria-label="切換編輯模式">
                     <span>✏️</span>
                 </button>
                 <button class="btn-icon btn-theme" title="切換主題" aria-label="切換深色模式">
@@ -148,45 +150,6 @@
                 <div class="modal-footer">
                     <button class="btn btn-secondary modal-cancel" type="button">取消</button>
                     <button class="btn btn-primary modal-save" type="button">儲存</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- ═══════════════ Token Modal ═══════════════ -->
-        <div class="modal-overlay" id="tokenModal">
-            <div class="modal">
-                <div class="modal-header">
-                    <h2 class="modal-title">GitHub 同步設定</h2>
-                    <button class="btn-icon modal-close" aria-label="關閉">
-                        <span>✕</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="token-banner">
-                        <span class="token-banner-icon">💡</span>
-                        <div class="token-banner-text">
-                            設定 GitHub Personal Access Token 後，你可以將行程修改同步到 GitHub，
-                            所有家人都能看到最新版本。
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="githubToken">Personal Access Token</label>
-                        <input class="form-input" type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxx">
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label" for="githubOwner">GitHub 帳號</label>
-                            <input class="form-input" type="text" id="githubOwner" placeholder="username">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="githubRepo">Repository 名稱</label>
-                            <input class="form-input" type="text" id="githubRepo" placeholder="Okinawa" value="Okinawa">
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary modal-cancel" type="button">取消</button>
-                    <button class="btn btn-primary token-save" type="button">儲存設定</button>
                 </div>
             </div>
         </div>

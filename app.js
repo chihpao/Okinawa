@@ -52,14 +52,20 @@
     initTheme();
 
     try {
-      // 優先從 localStorage 載入（使用者修改過的版本）
-      const savedData = localStorage.getItem(STORAGE_KEYS.data);
-      if (savedData) {
-        appData = JSON.parse(savedData);
-      } else {
-        const response = await fetch('data.json');
-        if (!response.ok) throw new Error('無法載入行程資料');
-        appData = await response.json();
+      // 優先從雲端載入最新版本
+      await CloudSync.syncFromCloud(false);
+      
+      if (!appData) {
+        // 如果雲端失敗，嘗試 localStorage
+        const savedData = localStorage.getItem(STORAGE_KEYS.data);
+        if (savedData) {
+          appData = JSON.parse(savedData);
+        } else {
+          // 最後回退到本地預設檔案
+          const response = await fetch('data.json');
+          if (!response.ok) throw new Error('無法載入行程資料');
+          appData = await response.json();
+        }
       }
 
       window.appData = appData; // 除錯用
@@ -73,7 +79,6 @@
       renderAll();
       setupEventListeners();
       startCountdown();
-      updateSyncButton();
 
     } catch (err) {
       console.error('初始化失敗:', err);
@@ -591,144 +596,65 @@
   }
 
   // ═══════════════════════════════════════════════
-  // GitHub API 同步
+  // 雲端同步 (JSONBlob 匿名同步)
   // ═══════════════════════════════════════════════
-  const GitHubSync = {
-    getToken() {
-      return localStorage.getItem(STORAGE_KEYS.githubToken) || '';
-    },
-    setToken(token) {
-      localStorage.setItem(STORAGE_KEYS.githubToken, token);
-    },
-    getOwner() {
-      return localStorage.getItem(STORAGE_KEYS.githubOwner) || '';
-    },
-    getRepo() {
-      return localStorage.getItem(STORAGE_KEYS.githubRepo) || 'Okinawa';
-    },
-    hasConfig() {
-      return !!(this.getToken() && this.getOwner());
+  const CloudSync = {
+    blobId: '019e8dee-92d5-7f7a-9620-63c4f20e9404',
+    url() {
+      return `https://jsonblob.com/api/jsonBlob/${this.blobId}`;
     },
 
-    async fetchFile(path) {
-      const token = this.getToken();
-      const owner = this.getOwner();
-      const repo = this.getRepo();
+    async syncToCloud() {
+      try {
+        const btn = document.querySelector('.btn-sync');
+        if (btn) btn.classList.add('syncing');
+        showToast('正在同步至雲端...');
 
-      const res = await fetch(
-        `https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/vnd.github.v3+json'
-          }
-        }
-      );
-      if (!res.ok) throw new Error(`GitHub API 錯誤: ${res.status}`);
-      return res.json();
-    },
-
-    async saveFile(path, content, sha, message) {
-      const token = this.getToken();
-      const owner = this.getOwner();
-      const repo = this.getRepo();
-
-      const body = {
-        message: message || '更新行程資料',
-        content: btoa(unescape(encodeURIComponent(content))),
-      };
-      if (sha) body.sha = sha;
-
-      const res = await fetch(
-        `https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
-        {
+        const content = JSON.stringify(appData);
+        const res = await fetch(this.url(), {
           method: 'PUT',
           headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/vnd.github.v3+json',
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
           },
-          body: JSON.stringify(body)
-        }
-      );
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || `GitHub API 錯誤: ${res.status}`);
-      }
-      return res.json();
-    },
-
-    async syncToGitHub() {
-      if (!this.hasConfig()) {
-        openModal('tokenModal');
-        return;
-      }
-      try {
-        showToast('正在同步至 GitHub...');
-        // 先取得現有檔案的 SHA
-        let sha = null;
-        try {
-          const existing = await this.fetchFile('data.json');
-          sha = existing.sha;
-        } catch (e) {
-          // 檔案可能不存在，第一次推送
-        }
-
-        const content = JSON.stringify(appData, null, 2);
-        await this.saveFile('data.json', content, sha, '更新行程 via 沖繩輕旅 App');
-        showToast('同步成功 ✓');
+          body: content
+        });
+        
+        if (!res.ok) throw new Error(`API 錯誤: ${res.status}`);
+        
+        showToast('雲端同步成功 ✓');
       } catch (err) {
         console.error('同步失敗:', err);
         showToast('同步失敗: ' + err.message);
+      } finally {
+        const btn = document.querySelector('.btn-sync');
+        if (btn) btn.classList.remove('syncing');
       }
     },
 
-    async syncFromGitHub() {
-      if (!this.hasConfig()) {
-        openModal('tokenModal');
-        return;
-      }
+    async syncFromCloud(showNotification = true) {
       try {
-        showToast('正在從 GitHub 載入...');
-        const file = await this.fetchFile('data.json');
-        const content = decodeURIComponent(escape(atob(file.content)));
-        appData = JSON.parse(content);
-        window.appData = appData;
+        if (showNotification) showToast('正在從雲端載入...');
+        const res = await fetch(this.url(), {
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+        if (!res.ok) throw new Error(`API 錯誤: ${res.status}`);
+        
+        const data = await res.json();
+        appData = data;
         saveToLocalStorage();
-        renderAll();
-        showToast('已載入最新版本 ✓');
+        if (showNotification) {
+          renderAll();
+          showToast('已載入最新行程 ✓');
+        }
       } catch (err) {
         console.error('載入失敗:', err);
-        showToast('載入失敗: ' + err.message);
+        if (showNotification) showToast('載入失敗: ' + err.message);
       }
     }
   };
-
-  function updateSyncButton() {
-    const btn = document.querySelector('.btn-sync');
-    if (btn) {
-      btn.classList.toggle('active', GitHubSync.hasConfig());
-    }
-  }
-
-  function saveTokenConfig() {
-    const token = document.getElementById('githubToken').value.trim();
-    const owner = document.getElementById('githubOwner').value.trim();
-    const repo = document.getElementById('githubRepo').value.trim() || 'Okinawa';
-
-    if (!token || !owner) {
-      showToast('請填入 Token 和 GitHub 帳號');
-      return;
-    }
-
-    localStorage.setItem(STORAGE_KEYS.githubToken, token);
-    localStorage.setItem(STORAGE_KEYS.githubOwner, owner);
-    localStorage.setItem(STORAGE_KEYS.githubRepo, repo);
-
-    updateSyncButton();
-    closeAllModals();
-    showToast('GitHub 設定已儲存 ✓');
-  }
 
   // ═══════════════════════════════════════════════
   // 觸控手勢（手機左右滑動切換天數）
@@ -810,16 +736,7 @@
 
     // 同步按鈕
     document.querySelector('.btn-sync')?.addEventListener('click', () => {
-      if (GitHubSync.hasConfig()) {
-        GitHubSync.syncToGitHub();
-      } else {
-        // 顯示已儲存的設定
-        const ownerInput = document.getElementById('githubOwner');
-        const repoInput = document.getElementById('githubRepo');
-        if (ownerInput) ownerInput.value = GitHubSync.getOwner();
-        if (repoInput) repoInput.value = GitHubSync.getRepo();
-        openModal('tokenModal');
-      }
+      CloudSync.syncToCloud();
     });
 
     // Day tabs — 使用事件代理
@@ -868,9 +785,6 @@
 
     // 儲存活動
     document.querySelector('.modal-save')?.addEventListener('click', saveActivity);
-
-    // 儲存 Token
-    document.querySelector('.token-save')?.addEventListener('click', saveTokenConfig);
 
     // 觸控手勢
     setupSwipeGestures();
