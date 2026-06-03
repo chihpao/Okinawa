@@ -785,6 +785,9 @@
     // 儲存活動
     document.querySelector('.modal-save')?.addEventListener('click', saveActivity);
 
+    // 導覽列捲動隱藏邏輯
+    setupNavbarScroll();
+
     // 觸控手勢
     setupSwipeGestures();
 
@@ -793,8 +796,30 @@
   }
 
   // ═══════════════════════════════════════════════
-  // 工具函式
+  // 工具函式與 UI 效果
   // ═══════════════════════════════════════════════
+  function setupNavbarScroll() {
+    let lastScrollY = window.scrollY;
+    const navbar = document.querySelector('.nav-bar');
+    
+    if (!navbar) return;
+
+    window.addEventListener('scroll', () => {
+      const currentScrollY = window.scrollY;
+      
+      // 向下捲動且超過一定距離 -> 隱藏
+      if (currentScrollY > lastScrollY && currentScrollY > 60) {
+        navbar.classList.add('nav-hidden');
+      } 
+      // 向上捲動 -> 顯示
+      else {
+        navbar.classList.remove('nav-hidden');
+      }
+      
+      lastScrollY = currentScrollY;
+    }, { passive: true });
+  }
+
   function escapeHtml(str) {
     if (!str) return '';
     const div = document.createElement('div');
