@@ -566,11 +566,20 @@
   }
 
   // ═══════════════════════════════════════════════
-  // 本地儲存
+  // 本地儲存與自動同步
   // ═══════════════════════════════════════════════
+  let syncTimeout = null;
+
   function saveToLocalStorage() {
     try {
       localStorage.setItem(STORAGE_KEYS.data, JSON.stringify(appData));
+      
+      // 觸發自動同步 (Debounce 2秒)
+      if (syncTimeout) clearTimeout(syncTimeout);
+      syncTimeout = setTimeout(() => {
+        CloudSync.syncToCloud();
+      }, 2000);
+      
     } catch (err) {
       console.error('儲存失敗:', err);
       showToast('儲存失敗，請檢查儲存空間');
@@ -606,9 +615,7 @@
 
     async syncToCloud() {
       try {
-        const btn = document.querySelector('.btn-sync');
-        if (btn) btn.classList.add('syncing');
-        showToast('正在同步至雲端...');
+        showToast('正在自動同步至雲端...');
 
         const content = JSON.stringify(appData);
         const res = await fetch(this.url(), {
@@ -626,9 +633,6 @@
       } catch (err) {
         console.error('同步失敗:', err);
         showToast('同步失敗: ' + err.message);
-      } finally {
-        const btn = document.querySelector('.btn-sync');
-        if (btn) btn.classList.remove('syncing');
       }
     },
 
@@ -733,11 +737,6 @@
 
     // 編輯模式切換
     document.querySelector('.btn-edit')?.addEventListener('click', toggleEditMode);
-
-    // 同步按鈕
-    document.querySelector('.btn-sync')?.addEventListener('click', () => {
-      CloudSync.syncToCloud();
-    });
 
     // Day tabs — 使用事件代理
     document.querySelector('.day-tabs-track')?.addEventListener('click', (e) => {
