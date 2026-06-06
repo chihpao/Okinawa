@@ -128,7 +128,7 @@
     ]
   };
 
-  const FIXED_BLOB_ID = '019e9bc1-71ad-7b8e-bad8-cc537bf6bed1';
+  const FIXED_BLOB_ID = 'edebeca';
 
   const CloudSync = {
     blobId: null,
@@ -138,7 +138,7 @@
     isSyncing: false,
     POLL_MS: 15000,
     DEBOUNCE_MS: 2000,
-    API_BASE: 'https://jsonblob.com/api/jsonBlob',
+    API_BASE: 'https://extendsclass.com/api/json-storage/bin',
 
     init() {
       this.blobId = FIXED_BLOB_ID;
