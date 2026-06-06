@@ -128,25 +128,22 @@
     ]
   };
 
-  const FIXED_BLOB_ID = 'edebeca';
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbyyOxIV_zj1nLN97jCWl8uPY1ecYPDKkbHd3cUjrEH86cPhbphzFL_GzecPzGSSopu5/exec';
 
   const CloudSync = {
-    blobId: null,
     pollInterval: null,
     syncTimeout: null,
     lastKnownHash: null,
     isSyncing: false,
     POLL_MS: 15000,
     DEBOUNCE_MS: 2000,
-    API_BASE: 'https://extendsclass.com/api/json-storage/bin',
 
     init() {
-      this.blobId = FIXED_BLOB_ID;
-      console.log('[Sync] Using fixed blob:', this.blobId);
+      console.log('[Sync] Using Google Apps Script Backend');
     },
 
     url() {
-      return `${this.API_BASE}/${this.blobId}`;
+      return GAS_URL;
     },
 
     setState(state) {
@@ -164,7 +161,7 @@
     },
 
     async syncToCloud() {
-      if (!this.blobId || this.isSyncing) return;
+      if (this.isSyncing) return;
       this.isSyncing = true;
       this.setState('syncing');
 
@@ -174,21 +171,15 @@
 
         const body = JSON.stringify(appData);
         const res = await fetch(this.url(), {
-          method: 'PUT',
+          method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Content-Type': 'text/plain;charset=utf-8'
           },
           body: body
         });
 
         if (!res.ok) {
-          if (res.status === 404) {
-            console.warn('[Sync] Blob not found (404)');
-            this.setState('offline');
-            return;
-          }
-          throw new Error(`PUT failed: ${res.status}`);
+          throw new Error(`POST failed: ${res.status}`);
         }
 
         this.lastKnownHash = body;
@@ -204,22 +195,10 @@
     },
 
     async syncFromCloud(silent = false) {
-      if (!this.blobId) return false;
-
       try {
         const fetchUrl = `${this.url()}?t=${Date.now()}`;
-        const res = await fetch(fetchUrl, {
-          headers: { 
-            'Accept': 'application/json',
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
-          }
-        });
+        const res = await fetch(fetchUrl);
         if (!res.ok) {
-          if (res.status === 404) {
-            console.warn('[Sync] Blob not found (404).');
-            return false;
-          }
           throw new Error(`GET failed: ${res.status}`);
         }
 
@@ -263,7 +242,7 @@
       }, this.POLL_MS);
 
       document.addEventListener('visibilitychange', () => {
-        if (!document.hidden && this.blobId) {
+        if (!document.hidden) {
           this.syncFromCloud(false);
         }
       });
@@ -604,7 +583,7 @@
   }
 
   function showShareBanner() {
-    if (bannerDismissed || !CloudSync.blobId) return;
+    if (bannerDismissed) return;
     const banner = document.getElementById('shareBanner');
     if (banner) banner.style.display = '';
   }

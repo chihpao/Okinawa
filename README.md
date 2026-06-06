@@ -1,50 +1,50 @@
-# ☀ 8月沖繩輕旅 (Okinawa Trip Planner)
+﻿# ? 8??蝜抵???(Okinawa Trip Planner)
 
-專為家族沖繩旅行設計的**輕量級、無後端、即時協作**行程規劃網站。
+撠摰嗆?瘝鼎??閮剛???*頛?蝝敺垢???雿?*銵?閬?蝬脩???
 
-🔗 **https://chihpao.github.io/Okinawa/**
+?? **https://chihpao.github.io/Okinawa/**
 
-## 專案特色
+## 撠??寡
 
-### Zero-Backend 即時協作
-- 純前端（Vanilla JS + CSS + HTML），部署於 GitHub Pages。
-- 透過 [ExtendsClass](https://jsonblob.com/) REST API 儲存共用資料，所有訪客共享同一份行程。
-- 編輯後 2 秒自動 Debounce 同步至雲端，其他裝置每 15 秒輪詢更新。
+### Zero-Backend ?單???
+- 蝝?蝡荔?Vanilla JS + CSS + HTML嚗??函蔡??GitHub Pages??
+- ?? [Google Apps Script](https://jsonblob.com/) REST API ?脣??梁鞈?嚗??赤摰Ｗ鈭怠?銝隞質?蝔?
+- 蝺刻摩敺?2 蝘??Debounce ?郊?喲蝡荔??嗡?鋆蔭瘥?15 蝘憚閰Ｘ?啜?
 
-### 現代化 Mobile-first 設計
-- **琉球紅型配色**：以沖繩傳統紅型織布為靈感，朱紅 `#C84B2F`、翠綠 `#1F8C78`、琥珀金 `#C9903D`。
-- 深色模式自動偵測 + 手動切換。
-- 導覽列下滑隱藏 / 上滑出現，最大化閱讀空間。
-- 左右滑動切換天數。
-- 倒數計時器即時顯示距離出發的時間。
+### ?曆誨??Mobile-first 閮剛?
+- **??蝝??**嚗誑瘝鼎?喟絞蝝?蝜??粹????梁? `#C84B2F`??蝬?`#1F8C78`????`#C9903D`??
+- 瘛梯璅∪??芸??菜葫 + ??????
+- 撠汗??皛??/ 銝??箇嚗?憭批??梯?蝛粹???
+- 撌血皛???憭拇??
+- ?閮??典?＊蝷箄??Ｗ?潛?????
 
-### 直覺 CRUD 操作
-- 卡片上直接提供編輯 / 刪除按鈕。
-- Bottom Sheet Modal 新增 / 編輯活動。
-- 刪除前有確認對話框，防止誤刪。
+### ?渲死 CRUD ??
+- ?∠?銝?交?靘楊頛?/ ?芷????
+- Bottom Sheet Modal ?啣? / 蝺刻摩瘣餃???
+- ?芷??蝣箄?撠店獢??脫迫隤文??
 
-## 專案架構
+## 撠??嗆?
 
-| 檔案 | 說明 |
+| 瑼? | 隤芣? |
 |------|------|
-| `index.html` | 頁面結構，語意化標籤與 Modal |
-| `index.css` | 設計系統，CSS Variables、響應式斷點、動畫 |
-| `app.js` | 應用邏輯，CRUD、雲端同步、事件監聽 |
-| `data.json` | 預設行程資料結構（備用） |
+| `index.html` | ?蝯?嚗???璅惜??Modal |
+| `index.css` | 閮剛?蝟餌絞嚗SS Variables????琿?????|
+| `app.js` | ??摩嚗RUD?蝡臬?甇乓?隞嗥??|
+| `data.json` | ?身銵?鞈?蝯?嚗??剁? |
 
-## 開發與部署
+## ??蝵?
 
-**本地測試**：
+**?砍皜祈岫**嚗?
 ```bash
 npx -y serve -l 3000 .
 ```
 
-**部署**：推送到 `main` 分支，GitHub Pages 自動部署。
+**?函蔡**嚗? `main` ?嚗itHub Pages ?芸??函蔡??
 
-## 技術棧
+## ?銵ㄖ
 
 - Vanilla JavaScript (ES6+)
 - CSS3 with CSS Custom Properties
 - Google Fonts (Outfit, Playfair Display, Noto Sans TC)
-- ExtendsClass API (免認證 REST 儲存)
-- GitHub Pages (靜態託管)
+- Google Apps Script API (??霅?REST ?脣?)
+- GitHub Pages (??閮恣)
