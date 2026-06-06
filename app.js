@@ -207,8 +207,13 @@
       if (!this.blobId) return false;
 
       try {
-        const res = await fetch(this.url(), {
-          headers: { 'Accept': 'application/json' }
+        const fetchUrl = `${this.url()}?t=${Date.now()}`;
+        const res = await fetch(fetchUrl, {
+          headers: { 
+            'Accept': 'application/json',
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
         });
         if (!res.ok) {
           if (res.status === 404) {
