@@ -138,6 +138,8 @@
   // ═══════════════════════════════════════════════
   // Cloud Sync Engine
   // ═══════════════════════════════════════════════
+  const BLOB_STORAGE_KEY = 'okinawa-blob-id';
+
   const CloudSync = {
     blobId: null,
     pollInterval: null,
@@ -149,12 +151,28 @@
     API_BASE: 'https://jsonblob.com/api/jsonBlob',
 
     init() {
-      // Try to read blob ID from URL hash
+      // Priority 1: URL hash (shared link)
       const hash = window.location.hash;
       const match = hash.match(/blob=([a-f0-9-]+)/i);
       if (match) {
         this.blobId = match[1];
+        // Persist to localStorage so it survives page reloads without hash
+        localStorage.setItem(BLOB_STORAGE_KEY, this.blobId);
+        console.log('[Sync] Blob ID from URL hash:', this.blobId);
+        return;
       }
+
+      // Priority 2: localStorage (returning visitor)
+      const saved = localStorage.getItem(BLOB_STORAGE_KEY);
+      if (saved) {
+        this.blobId = saved;
+        // Restore hash for shareability
+        history.replaceState(null, '', `#blob=${this.blobId}`);
+        console.log('[Sync] Blob ID from localStorage:', this.blobId);
+        return;
+      }
+
+      console.log('[Sync] No existing blob ID found — will create new');
     },
 
     url() {
@@ -179,6 +197,8 @@
     async createBlob(data) {
       try {
         this.setState('syncing');
+        console.log('[Sync] Creating new blob...');
+
         const res = await fetch(this.API_BASE, {
           method: 'POST',
           headers: {
@@ -190,29 +210,42 @@
 
         if (!res.ok) throw new Error(`POST failed: ${res.status}`);
 
-        // Get blob ID from Location header
-        const location = res.headers.get('Location');
-        if (location) {
-          this.blobId = location.split('/').pop();
-        } else {
-          // Fallback: try X-jsonblob header or response URL
-          const xHeader = res.headers.get('X-jsonblob');
-          if (xHeader) {
-            this.blobId = xHeader;
-          } else {
-            throw new Error('Could not determine blob ID');
+        // Extract blob ID — try multiple sources
+        let newId = null;
+
+        // Source 1: X-jsonblob-id header (most reliable in browsers)
+        const xId = res.headers.get('X-jsonblob-id');
+        if (xId) {
+          newId = xId;
+          console.log('[Sync] Got blob ID from X-jsonblob-id:', newId);
+        }
+
+        // Source 2: Location header
+        if (!newId) {
+          const loc = res.headers.get('Location');
+          if (loc) {
+            newId = loc.split('/').pop();
+            console.log('[Sync] Got blob ID from Location:', newId);
           }
         }
 
-        // Update URL hash (without triggering hashchange reload)
+        if (!newId) {
+          throw new Error('Could not determine blob ID from response headers');
+        }
+
+        this.blobId = newId;
+
+        // Persist blob ID in localStorage AND URL hash
+        localStorage.setItem(BLOB_STORAGE_KEY, this.blobId);
         history.replaceState(null, '', `#blob=${this.blobId}`);
+
         this.lastKnownHash = JSON.stringify(data);
         this.setState('saved');
 
-        console.log('CloudSync: Created blob', this.blobId);
+        console.log('[Sync] ✅ Blob created & saved:', this.blobId);
         return this.blobId;
       } catch (err) {
-        console.error('CloudSync: Failed to create blob', err);
+        console.error('[Sync] ❌ Failed to create blob:', err);
         this.setState('offline');
         return null;
       }
@@ -239,13 +272,24 @@
           body: body
         });
 
-        if (!res.ok) throw new Error(`PUT failed: ${res.status}`);
+        if (!res.ok) {
+          // If blob was deleted/expired, create a new one
+          if (res.status === 404) {
+            console.warn('[Sync] Blob gone (404), creating new...');
+            this.blobId = null;
+            localStorage.removeItem(BLOB_STORAGE_KEY);
+            await this.createBlob(appData);
+            return;
+          }
+          throw new Error(`PUT failed: ${res.status}`);
+        }
 
         this.lastKnownHash = body;
         this.setState('saved');
         localStorage.setItem(STORAGE_KEYS.data, body);
+        console.log('[Sync] ✅ Pushed to cloud');
       } catch (err) {
-        console.error('CloudSync: Push failed', err);
+        console.error('[Sync] ❌ Push failed:', err);
         this.setState('offline');
       } finally {
         this.isSyncing = false;
@@ -262,8 +306,9 @@
         });
         if (!res.ok) {
           if (res.status === 404) {
-            console.warn('CloudSync: Blob not found (404). Will create new.');
+            console.warn('[Sync] Blob not found (404). Will create new.');
             this.blobId = null;
+            localStorage.removeItem(BLOB_STORAGE_KEY);
             return false;
           }
           throw new Error(`GET failed: ${res.status}`);
@@ -286,6 +331,7 @@
               renderAll();
               showToast('📡 行程已從雲端更新');
             }
+            console.log('[Sync] 📥 Pulled remote update');
           } else {
             this.lastKnownHash = hash;
           }
@@ -294,7 +340,7 @@
         this.setState('saved');
         return true;
       } catch (err) {
-        console.error('CloudSync: Pull failed', err);
+        console.error('[Sync] ❌ Pull failed:', err);
         if (!silent) this.setState('offline');
         return false;
       }
@@ -315,6 +361,7 @@
           this.syncFromCloud(false);
         }
       });
+      console.log('[Sync] 🔄 Polling started (every', this.POLL_MS / 1000, 's)');
     },
 
     // Debounced save
