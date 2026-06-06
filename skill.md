@@ -1,22 +1,27 @@
 # 🛠️ 核心技術與技巧 (Technical Skills)
 
-本專案在實作過程中運用了許多現代 Web 開發技巧，特別是在不依賴傳統後端資料庫的前提下，實現複雜的互動與資料同步。
+本專案在不依賴後端伺服器的前提下，實現即時協作行程編輯。
 
-## 1. Zero-Backend 資料同步架構
-為滿足「有連結即可編輯，免設定帳號密碼」的極致懶人需求，我們放棄了 GitHub Token 認證：
-- **JSONBlob 整合**：利用第三方的免費 REST API (`jsonblob.com`) 作為資料儲存中心。
-- **Auto-Sync (自動同步)**：取代傳統的「手動儲存按鈕」，我們在 `app.js` 的 `saveToLocalStorage()` 中實作了 **Debounce (防抖) 機制**。當使用者觸發修改時，會先更新 LocalStorage，並啟動一個 2 秒的 Timer。如果兩秒內沒有新的修改，就會將資料以 `PUT` 請求推送到雲端。這能有效避免頻繁打 API 造成伺服器負擔或被封鎖。
+## 1. 固定 Blob 雲端同步架構
+- 使用 JSONBlob REST API (`jsonblob.com`) 儲存共用資料。
+- 程式碼中寫死單一 Blob ID，所有訪客共用同一份行程——打開網址即可協作，無需分享特殊連結。
+- Debounce 機制：編輯觸發後等待 2 秒，若無新修改才執行 PUT 推送。
+- 輪詢機制：每 15 秒 GET 拉取遠端資料，比對 hash 後決定是否更新 UI。
+- 衝突偵測：透過 `_modifiedBy` (device ID) 和 `_lastModified` (timestamp) 區分自己與他人的寫入。
 
-## 2. 現代化 UI 與 CSS 技巧
-- **Design Tokens (CSS 變數)**：將顏色、間距、動畫時間抽離成 `:root` 變數。實作深色模式時，只需在 `[data-theme="dark"]` 中覆寫變數即可，完全不需更動 HTML 或複雜的 JS 邏輯。
-- **懸浮膠囊導覽列 (Floating Pill Navbar)**：
-  - 使用 `position: fixed` 搭配 `transform: translateX(-50%)` 達成完美置中。
-  - 結合 `backdrop-filter: blur(20px)` 達成現代感的毛玻璃效果。
-- **智慧隱藏 (Auto-hide on scroll)**：
-  - 在 `window` 上綁定 `scroll` 事件，透過紀錄 `lastScrollY` 來判斷滑動方向。
-  - 為了效能，事件監聽器標記為 `{ passive: true }`。
-  - 透過 CSS `transform: translate(-50%, calc(-100% - 2rem))` 搭配 `transition`，實現滑順的隱藏與出現動畫。
+## 2. CSS 設計系統
+- Design Tokens 全部抽離為 `:root` CSS Variables，深色模式只需覆寫 `[data-theme="dark"]` 變數。
+- 琉球紅型配色系統：6 種分類色（觀光/美食/購物/交通/住宿/休閒）對應卡片左邊色條。
+- FAB 按鈕定位：使用 `.nav-item.btn-add-fab` 雙 class 提高 specificity，搭配 `transform: translateY()` 上浮，不破壞 flexbox flow。
 
-## 3. 結構化資料處理
-- 將非結構化的 Word 檔案，透過字串解析轉換為高度結構化的 JSON。
-- 資料層 (`appData`) 與渲染層 (`renderAll`) 分離。任何 CRUD 操作只需修改資料層，然後呼叫重新渲染函式，類似 React 的 State Driven 設計模式。
+## 3. 行動裝置優化
+- Mobile-first 響應式設計，所有尺寸以 `min-width` 斷點向上擴展。
+- Touch 手勢：左右滑動切換天數（`touchstart` / `touchend` 計算位移量）。
+- Auto-hide 導覽列：`requestAnimationFrame` + scroll delta 判斷方向，`passive: true` 優化效能。
+- Bottom Sheet Modal：手機端 Modal 從底部滑入，桌面端居中顯示。
+- Safe Area 支援：`env(safe-area-inset-*)` 處理 iPhone 瀏海和底部指示條。
+
+## 4. 前端架構模式
+- State-Driven Rendering：所有 CRUD 操作只修改 `appData` 物件，再呼叫 `renderAll()` 重繪 UI。
+- 事件委派 (Event Delegation)：卡片的編輯/刪除按鈕統一透過 `scheduleContainer` 的 click 事件處理，避免大量個別綁定。
+- IIFE 封裝：整個應用包在立即執行函式中，避免全域命名空間污染。

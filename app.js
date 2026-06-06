@@ -1,12 +1,6 @@
-/* ═══════════════════════════════════════════════════════
-   OKINAWA 輕旅 — App Logic v3.0
-   Vanilla JS · ES6+ · Real-time Cloud Sync
-   ═══════════════════════════════════════════════════════ */
-
 (function () {
   'use strict';
 
-  // ─── SVG Icons ───
   const SVGS = {
     sightseeing: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>',
     food: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>',
@@ -46,7 +40,6 @@
 
   const PERIOD_ORDER = ['上午', '下午', '傍晚', '晚上', '夜間'];
 
-  // ─── State ───
   let appData = null;
   let activeDay = 0;
   let countdownInterval = null;
@@ -135,11 +128,6 @@
     ]
   };
 
-  // ═══════════════════════════════════════════════
-  // Cloud Sync Engine
-  // ═══════════════════════════════════════════════
-
-  // Fixed blob ID — everyone who opens the site shares this same data
   const FIXED_BLOB_ID = '019e9bc1-71ad-7b8e-bad8-cc537bf6bed1';
 
   const CloudSync = {
@@ -148,12 +136,11 @@
     syncTimeout: null,
     lastKnownHash: null,
     isSyncing: false,
-    POLL_MS: 15000,  // 15 seconds
+    POLL_MS: 15000,
     DEBOUNCE_MS: 2000,
     API_BASE: 'https://jsonblob.com/api/jsonBlob',
 
     init() {
-      // Always use the fixed blob ID — everyone shares the same data
       this.blobId = FIXED_BLOB_ID;
       console.log('[Sync] Using fixed blob:', this.blobId);
     },
@@ -176,71 +163,12 @@
       label.textContent = labels[state] || '';
     },
 
-    // Create a new JSONBlob
-    async createBlob(data) {
-      try {
-        this.setState('syncing');
-        console.log('[Sync] Creating new blob...');
-
-        const res = await fetch(this.API_BASE, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify(data)
-        });
-
-        if (!res.ok) throw new Error(`POST failed: ${res.status}`);
-
-        // Extract blob ID — try multiple sources
-        let newId = null;
-
-        // Source 1: X-jsonblob-id header (most reliable in browsers)
-        const xId = res.headers.get('X-jsonblob-id');
-        if (xId) {
-          newId = xId;
-          console.log('[Sync] Got blob ID from X-jsonblob-id:', newId);
-        }
-
-        // Source 2: Location header
-        if (!newId) {
-          const loc = res.headers.get('Location');
-          if (loc) {
-            newId = loc.split('/').pop();
-            console.log('[Sync] Got blob ID from Location:', newId);
-          }
-        }
-
-        if (!newId) {
-          throw new Error('Could not determine blob ID from response headers');
-        }
-
-        this.blobId = newId;
-
-        // Update URL hash
-        history.replaceState(null, '', `#blob=${this.blobId}`);
-
-        this.lastKnownHash = JSON.stringify(data);
-        this.setState('saved');
-
-        console.log('[Sync] ✅ Blob created & saved:', this.blobId);
-        return this.blobId;
-      } catch (err) {
-        console.error('[Sync] ❌ Failed to create blob:', err);
-        this.setState('offline');
-        return null;
-      }
-    },
-
-    // Push local data to cloud
     async syncToCloud() {
       if (!this.blobId || this.isSyncing) return;
       this.isSyncing = true;
       this.setState('syncing');
 
       try {
-        // Add timestamp for conflict detection
         appData._lastModified = Date.now();
         appData._modifiedBy = getDeviceId();
 
@@ -256,9 +184,8 @@
 
         if (!res.ok) {
           if (res.status === 404) {
-            console.warn('[Sync] Blob gone (404), resetting to fixed ID...');
-            this.blobId = FIXED_BLOB_ID;
-            await this.createBlob(appData);
+            console.warn('[Sync] Blob not found (404)');
+            this.setState('offline');
             return;
           }
           throw new Error(`PUT failed: ${res.status}`);
@@ -267,16 +194,15 @@
         this.lastKnownHash = body;
         this.setState('saved');
         localStorage.setItem(STORAGE_KEYS.data, body);
-        console.log('[Sync] ✅ Pushed to cloud');
+        console.log('[Sync] Pushed to cloud');
       } catch (err) {
-        console.error('[Sync] ❌ Push failed:', err);
+        console.error('[Sync] Push failed:', err);
         this.setState('offline');
       } finally {
         this.isSyncing = false;
       }
     },
 
-    // Pull remote data from cloud
     async syncFromCloud(silent = false) {
       if (!this.blobId) return false;
 
@@ -295,7 +221,6 @@
         const data = await res.json();
         const hash = JSON.stringify(data);
 
-        // Only update if data actually changed AND not from our own write
         if (hash !== this.lastKnownHash) {
           const wasOurWrite = data._modifiedBy === getDeviceId() &&
             data._lastModified && (Date.now() - data._lastModified < this.POLL_MS + 2000);
@@ -309,7 +234,7 @@
               renderAll();
               showToast('📡 行程已從雲端更新');
             }
-            console.log('[Sync] 📥 Pulled remote update');
+            console.log('[Sync] Pulled remote update');
           } else {
             this.lastKnownHash = hash;
           }
@@ -318,13 +243,12 @@
         this.setState('saved');
         return true;
       } catch (err) {
-        console.error('[Sync] ❌ Pull failed:', err);
+        console.error('[Sync] Pull failed:', err);
         if (!silent) this.setState('offline');
         return false;
       }
     },
 
-    // Start auto-polling
     startPolling() {
       if (this.pollInterval) clearInterval(this.pollInterval);
       this.pollInterval = setInterval(() => {
@@ -333,16 +257,14 @@
         }
       }, this.POLL_MS);
 
-      // Also sync when tab becomes visible
       document.addEventListener('visibilitychange', () => {
         if (!document.hidden && this.blobId) {
           this.syncFromCloud(false);
         }
       });
-      console.log('[Sync] 🔄 Polling started (every', this.POLL_MS / 1000, 's)');
+      console.log('[Sync] Polling started (every', this.POLL_MS / 1000, 's)');
     },
 
-    // Debounced save
     scheduleSave() {
       this.setState('unsaved');
       if (this.syncTimeout) clearTimeout(this.syncTimeout);
@@ -352,7 +274,6 @@
     }
   };
 
-  // Simple device ID for conflict detection
   function getDeviceId() {
     let id = localStorage.getItem('okinawa-device-id');
     if (!id) {
@@ -362,19 +283,14 @@
     return id;
   }
 
-  // ═══════════════════════════════════════════════
-  // Initialization
-  // ═══════════════════════════════════════════════
   async function initApp() {
     showLoading();
     initTheme();
     CloudSync.init();
 
     try {
-      // 1. Always load from the fixed cloud blob first
       const cloudLoaded = await CloudSync.syncFromCloud(true);
 
-      // 2. If cloud failed, try localStorage, then use defaults
       if (!appData) {
         const saved = localStorage.getItem(STORAGE_KEYS.data);
         if (saved) {
@@ -386,14 +302,11 @@
         } else {
           appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
         }
-        // Push local/default data to cloud so it's in sync
         await CloudSync.syncToCloud();
       }
 
-      // 4. Start polling for remote changes
       CloudSync.startPolling();
 
-      // 5. Restore UI state
       const savedDay = localStorage.getItem(STORAGE_KEYS.activeDay);
       if (savedDay !== null) {
         activeDay = Math.min(parseInt(savedDay, 10), appData.days.length - 1);
@@ -401,13 +314,11 @@
 
       bannerDismissed = localStorage.getItem(STORAGE_KEYS.bannerDismissed) === 'true';
 
-      // 6. Render
       window.appData = appData;
       renderAll();
       setupEventListeners();
       startCountdown();
       showShareBanner();
-
     } catch (err) {
       console.error('Init error:', err);
       showError('資料載入失敗，請重新整理頁面。');
@@ -428,9 +339,6 @@
     if (main) main.innerHTML = `<div class="empty-state"><p>${msg}</p></div>`;
   }
 
-  // ═══════════════════════════════════════════════
-  // Render Engine
-  // ═══════════════════════════════════════════════
   function renderAll() {
     renderHeroTravelers();
     renderDayTabs();
@@ -595,9 +503,6 @@
     </div>`;
   }
 
-  // ═══════════════════════════════════════════════
-  // Day Switching
-  // ═══════════════════════════════════════════════
   function switchDay(index) {
     if (!appData || index < 0 || index >= appData.days.length) return;
     activeDay = index;
@@ -610,16 +515,12 @@
       view.classList.toggle('active', i === index);
     });
 
-    // Scroll active tab into view
     const activeTab = document.querySelector('.day-tab.active');
     if (activeTab) {
       activeTab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
     }
   }
 
-  // ═══════════════════════════════════════════════
-  // Countdown Timer
-  // ═══════════════════════════════════════════════
   function startCountdown() {
     updateCountdown();
     countdownInterval = setInterval(updateCountdown, 1000);
@@ -666,15 +567,11 @@
     const str = String(value);
     if (el.textContent !== str) {
       el.textContent = str;
-      // Micro-animation: brief scale bump
       el.classList.add('tick');
       setTimeout(() => el.classList.remove('tick'), 300);
     }
   }
 
-  // ═══════════════════════════════════════════════
-  // Theme
-  // ═══════════════════════════════════════════════
   function initTheme() {
     const saved = localStorage.getItem(STORAGE_KEYS.theme);
     if (saved) {
@@ -701,9 +598,6 @@
     if (darkIcon) darkIcon.style.display = isDark ? 'block' : 'none';
   }
 
-  // ═══════════════════════════════════════════════
-  // Share
-  // ═══════════════════════════════════════════════
   function showShareBanner() {
     if (bannerDismissed || !CloudSync.blobId) return;
     const banner = document.getElementById('shareBanner');
@@ -718,7 +612,7 @@
   }
 
   function openShareModal() {
-    const url = window.location.origin + window.location.pathname + '#blob=' + (CloudSync.blobId || '');
+    const url = window.location.origin + window.location.pathname;
     const input = document.getElementById('shareUrlInput');
     if (input) input.value = url;
     openModal('shareModal');
@@ -737,16 +631,12 @@
         setTimeout(() => { btn.textContent = '複製連結'; }, 2000);
       }
     } catch (err) {
-      // Fallback for older browsers
       input.select();
       document.execCommand('copy');
       showToast('✅ 連結已複製！');
     }
   }
 
-  // ═══════════════════════════════════════════════
-  // Modal / Form
-  // ═══════════════════════════════════════════════
   function openAddModal() {
     editingActivityId = null;
     editingDayIndex = activeDay;
@@ -816,7 +706,6 @@
     showToast('✅ 已儲存');
   }
 
-  // Custom delete confirmation
   function requestDelete(activityId, dayIndex) {
     pendingDeleteId = activityId;
     pendingDeleteDay = dayIndex;
@@ -857,17 +746,11 @@
     document.body.style.overflow = '';
   }
 
-  // ═══════════════════════════════════════════════
-  // Data Persistence
-  // ═══════════════════════════════════════════════
   function saveData() {
     localStorage.setItem(STORAGE_KEYS.data, JSON.stringify(appData));
     CloudSync.scheduleSave();
   }
 
-  // ═══════════════════════════════════════════════
-  // Toast Notifications
-  // ═══════════════════════════════════════════════
   function showToast(message) {
     const container = document.getElementById('toastContainer');
     if (!container) return;
@@ -881,9 +764,6 @@
     }, 2500);
   }
 
-  // ═══════════════════════════════════════════════
-  // Auto-hide Top/Bottom Bar on Scroll
-  // ═══════════════════════════════════════════════
   function setupScrollHide() {
     const topBar = document.getElementById('topBar');
     const bottomNav = document.getElementById('bottomNav');
@@ -896,11 +776,9 @@
           const scrollDelta = currentScroll - lastScrollY;
 
           if (scrollDelta > 8 && currentScroll > 100) {
-            // Scrolling down — hide bars
             if (topBar) topBar.classList.add('hidden');
             if (bottomNav) bottomNav.classList.add('hidden');
           } else if (scrollDelta < -5) {
-            // Scrolling up — show bars
             if (topBar) topBar.classList.remove('hidden');
             if (bottomNav) bottomNav.classList.remove('hidden');
           }
@@ -913,9 +791,6 @@
     }, { passive: true });
   }
 
-  // ═══════════════════════════════════════════════
-  // Swipe Gestures
-  // ═══════════════════════════════════════════════
   function setupSwipeGestures() {
     const main = document.getElementById('scheduleContainer');
     if (!main) return;
@@ -942,34 +817,26 @@
     }, { passive: true });
   }
 
-  // ═══════════════════════════════════════════════
-  // Event Listeners
-  // ═══════════════════════════════════════════════
   function setupEventListeners() {
-    // Theme
     document.getElementById('btnTheme')?.addEventListener('click', toggleTheme);
 
-    // Bottom Nav
     document.getElementById('navHome')?.addEventListener('click', () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
     document.getElementById('btnFab')?.addEventListener('click', openAddModal);
     document.getElementById('navShare')?.addEventListener('click', openShareModal);
 
-    // Share Banner
     document.getElementById('btnBannerShare')?.addEventListener('click', () => {
       dismissShareBanner();
       openShareModal();
     });
     document.getElementById('btnBannerClose')?.addEventListener('click', dismissShareBanner);
 
-    // Day Tabs
     document.getElementById('dayTabsTrack')?.addEventListener('click', (e) => {
       const tab = e.target.closest('.day-tab');
       if (tab) switchDay(parseInt(tab.dataset.day, 10));
     });
 
-    // Card Actions (edit/delete)
     document.getElementById('scheduleContainer')?.addEventListener('click', (e) => {
       const editBtn = e.target.closest('[data-action="edit"]');
       const deleteBtn = e.target.closest('[data-action="delete"]');
@@ -982,41 +849,31 @@
       }
     });
 
-    // Modal Close buttons
     document.querySelectorAll('.modal-close, .modal-cancel').forEach(btn => {
       btn.addEventListener('click', closeAllModals);
     });
 
-    // Modal overlay click to close
     document.querySelectorAll('.modal-overlay').forEach(overlay => {
       overlay.addEventListener('click', (e) => {
         if (e.target === overlay) closeAllModals();
       });
     });
 
-    // Activity Modal Save
     document.querySelector('.modal-save')?.addEventListener('click', saveActivity);
 
-    // Delete Modal
     document.getElementById('btnDeleteCancel')?.addEventListener('click', closeAllModals);
     document.getElementById('btnDeleteConfirm')?.addEventListener('click', confirmDelete);
 
-    // Share Modal
     document.getElementById('btnCopyUrl')?.addEventListener('click', copyShareUrl);
 
-    // Keyboard: Escape to close modals
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') closeAllModals();
     });
 
-    // Swipe & Scroll
     setupSwipeGestures();
     setupScrollHide();
   }
 
-  // ═══════════════════════════════════════════════
-  // Utility
-  // ═══════════════════════════════════════════════
   function escapeHtml(unsafe) {
     if (!unsafe) return '';
     return unsafe.toString()
@@ -1027,7 +884,6 @@
       .replace(/'/g, "&#039;");
   }
 
-  // ─── Run ───
   document.addEventListener('DOMContentLoaded', initApp);
 
 })();
