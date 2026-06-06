@@ -138,7 +138,9 @@
   // ═══════════════════════════════════════════════
   // Cloud Sync Engine
   // ═══════════════════════════════════════════════
-  const BLOB_STORAGE_KEY = 'okinawa-blob-id';
+
+  // Fixed blob ID — everyone who opens the site shares this same data
+  const FIXED_BLOB_ID = '019e9bc1-71ad-7b8e-bad8-cc537bf6bed1';
 
   const CloudSync = {
     blobId: null,
@@ -151,28 +153,9 @@
     API_BASE: 'https://jsonblob.com/api/jsonBlob',
 
     init() {
-      // Priority 1: URL hash (shared link)
-      const hash = window.location.hash;
-      const match = hash.match(/blob=([a-f0-9-]+)/i);
-      if (match) {
-        this.blobId = match[1];
-        // Persist to localStorage so it survives page reloads without hash
-        localStorage.setItem(BLOB_STORAGE_KEY, this.blobId);
-        console.log('[Sync] Blob ID from URL hash:', this.blobId);
-        return;
-      }
-
-      // Priority 2: localStorage (returning visitor)
-      const saved = localStorage.getItem(BLOB_STORAGE_KEY);
-      if (saved) {
-        this.blobId = saved;
-        // Restore hash for shareability
-        history.replaceState(null, '', `#blob=${this.blobId}`);
-        console.log('[Sync] Blob ID from localStorage:', this.blobId);
-        return;
-      }
-
-      console.log('[Sync] No existing blob ID found — will create new');
+      // Always use the fixed blob ID — everyone shares the same data
+      this.blobId = FIXED_BLOB_ID;
+      console.log('[Sync] Using fixed blob:', this.blobId);
     },
 
     url() {
@@ -235,8 +218,7 @@
 
         this.blobId = newId;
 
-        // Persist blob ID in localStorage AND URL hash
-        localStorage.setItem(BLOB_STORAGE_KEY, this.blobId);
+        // Update URL hash
         history.replaceState(null, '', `#blob=${this.blobId}`);
 
         this.lastKnownHash = JSON.stringify(data);
@@ -273,11 +255,9 @@
         });
 
         if (!res.ok) {
-          // If blob was deleted/expired, create a new one
           if (res.status === 404) {
-            console.warn('[Sync] Blob gone (404), creating new...');
-            this.blobId = null;
-            localStorage.removeItem(BLOB_STORAGE_KEY);
+            console.warn('[Sync] Blob gone (404), resetting to fixed ID...');
+            this.blobId = FIXED_BLOB_ID;
             await this.createBlob(appData);
             return;
           }
@@ -306,9 +286,7 @@
         });
         if (!res.ok) {
           if (res.status === 404) {
-            console.warn('[Sync] Blob not found (404). Will create new.');
-            this.blobId = null;
-            localStorage.removeItem(BLOB_STORAGE_KEY);
+            console.warn('[Sync] Blob not found (404).');
             return false;
           }
           throw new Error(`GET failed: ${res.status}`);
@@ -393,13 +371,10 @@
     CloudSync.init();
 
     try {
-      // 1. Try to load from cloud if we have a blob ID
-      let cloudLoaded = false;
-      if (CloudSync.blobId) {
-        cloudLoaded = await CloudSync.syncFromCloud(true);
-      }
+      // 1. Always load from the fixed cloud blob first
+      const cloudLoaded = await CloudSync.syncFromCloud(true);
 
-      // 2. If no cloud data, try localStorage, then use defaults
+      // 2. If cloud failed, try localStorage, then use defaults
       if (!appData) {
         const saved = localStorage.getItem(STORAGE_KEYS.data);
         if (saved) {
@@ -411,11 +386,8 @@
         } else {
           appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
         }
-      }
-
-      // 3. If no blob yet, create one
-      if (!CloudSync.blobId) {
-        await CloudSync.createBlob(appData);
+        // Push local/default data to cloud so it's in sync
+        await CloudSync.syncToCloud();
       }
 
       // 4. Start polling for remote changes
