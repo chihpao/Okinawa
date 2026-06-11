@@ -41,20 +41,18 @@
   const PERIOD_ORDER = ['上午', '下午', '傍晚', '晚上', '夜間'];
 
   let appData = null;
-  let activeDay = 0;
+  let activeDay = -1;
   let countdownInterval = null;
   let editingActivityId = null;
   let editingDayIndex = null;
   let pendingDeleteId = null;
   let pendingDeleteDay = null;
   let lastScrollY = 0;
-  let bannerDismissed = false;
 
   const STORAGE_KEYS = {
     data: 'okinawa-data-v3',
     theme: 'okinawa-theme-v3',
-    activeDay: 'okinawa-active-day',
-    bannerDismissed: 'okinawa-banner-dismissed'
+    activeDay: 'okinawa-active-day'
   };
 
   const DEFAULT_DATA = {
@@ -293,16 +291,15 @@
 
       const savedDay = localStorage.getItem(STORAGE_KEYS.activeDay);
       if (savedDay !== null) {
-        activeDay = Math.min(parseInt(savedDay, 10), appData.days.length - 1);
+        activeDay = Math.min(Math.max(-1, parseInt(savedDay, 10)), appData.days.length - 1);
       }
 
-      bannerDismissed = localStorage.getItem(STORAGE_KEYS.bannerDismissed) === 'true';
+
 
       window.appData = appData;
       renderAll();
       setupEventListeners();
       startCountdown();
-      showShareBanner();
     } catch (err) {
       console.error('Init error:', err);
       showError('資料載入失敗，請重新整理頁面。');
@@ -351,7 +348,7 @@
       const m = (date.getMonth() + 1) + '月';
       const d = date.getDate();
       return `<div class="day-tab${i === activeDay ? ' active' : ''}" data-day="${i}">
-        <span class="tab-title">第 ${i + 1} 天</span>
+        <span class="tab-title"><span class="hide-mobile">第 </span><span class="tab-num">${i + 1}</span><span class="hide-mobile"> 天</span></span>
         <span class="tab-date">${m}${d}日</span>
       </div>`;
     }).join('');
@@ -372,10 +369,8 @@
 
       return `<div class="day-view${dayIndex === activeDay ? ' active' : ''}" data-day-index="${dayIndex}">
         <div class="day-info">
-          <h2 class="day-info-title">${day.label}</h2>
-          <div class="day-info-subtitle">${dateStr}</div>
-          ${day.subtitle ? `<div class="day-info-theme">${escapeHtml(day.subtitle)}</div>` : ''}
-          <div class="day-badges">${badges}</div>
+          ${day.subtitle ? `<h2 class="day-info-title" style="font-size: 1.6rem; color: var(--accent);">${escapeHtml(day.subtitle)}</h2>` : ''}
+          <div class="day-badges" style="margin-top: 0.5rem;">${badges}</div>
         </div>
         <div class="timeline">${timeline}</div>
       </div>`;
@@ -488,7 +483,7 @@
   }
 
   function switchDay(index) {
-    if (!appData || index < 0 || index >= appData.days.length) return;
+    if (!appData || index < -1 || index >= appData.days.length) return;
     activeDay = index;
     localStorage.setItem(STORAGE_KEYS.activeDay, index);
 
@@ -498,6 +493,11 @@
     document.querySelectorAll('.day-view').forEach((view, i) => {
       view.classList.toggle('active', i === index);
     });
+
+    const hero = document.getElementById('heroSection');
+    if (hero) {
+      hero.style.display = index === -1 ? 'block' : 'none';
+    }
 
     const activeTab = document.querySelector('.day-tab.active');
     if (activeTab) {
@@ -560,66 +560,31 @@
     const saved = localStorage.getItem(STORAGE_KEYS.theme);
     if (saved) {
       document.documentElement.setAttribute('data-theme', saved);
-    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      document.documentElement.setAttribute('data-theme', 'dark');
+    } else if (window.matchMedia('(prefers-color-scheme: light)').matches) {
+      document.documentElement.setAttribute('data-theme', 'light');
     }
+    // Dark is CSS default — no explicit set needed
     updateThemeIcons();
   }
 
   function toggleTheme() {
     const current = document.documentElement.getAttribute('data-theme');
-    const next = current === 'dark' ? 'light' : 'dark';
+    const isDarkNow = current !== 'light';
+    const next = isDarkNow ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', next);
     localStorage.setItem(STORAGE_KEYS.theme, next);
     updateThemeIcons();
   }
 
   function updateThemeIcons() {
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
     const lightIcon = document.querySelector('.theme-icon-light');
     const darkIcon = document.querySelector('.theme-icon-dark');
     if (lightIcon) lightIcon.style.display = isDark ? 'none' : 'block';
     if (darkIcon) darkIcon.style.display = isDark ? 'block' : 'none';
   }
 
-  function showShareBanner() {
-    if (bannerDismissed) return;
-    const banner = document.getElementById('shareBanner');
-    if (banner) banner.style.display = '';
-  }
 
-  function dismissShareBanner() {
-    bannerDismissed = true;
-    localStorage.setItem(STORAGE_KEYS.bannerDismissed, 'true');
-    const banner = document.getElementById('shareBanner');
-    if (banner) banner.style.display = 'none';
-  }
-
-  function openShareModal() {
-    const url = window.location.origin + window.location.pathname;
-    const input = document.getElementById('shareUrlInput');
-    if (input) input.value = url;
-    openModal('shareModal');
-  }
-
-  async function copyShareUrl() {
-    const input = document.getElementById('shareUrlInput');
-    if (!input) return;
-
-    try {
-      await navigator.clipboard.writeText(input.value);
-      showToast('✅ 連結已複製！');
-      const btn = document.getElementById('btnCopyUrl');
-      if (btn) {
-        btn.textContent = '已複製 ✓';
-        setTimeout(() => { btn.textContent = '複製連結'; }, 2000);
-      }
-    } catch (err) {
-      input.select();
-      document.execCommand('copy');
-      showToast('✅ 連結已複製！');
-    }
-  }
 
   function openAddModal() {
     editingActivityId = null;
@@ -804,17 +769,18 @@
   function setupEventListeners() {
     document.getElementById('btnTheme')?.addEventListener('click', toggleTheme);
 
+    document.querySelector('.brand')?.addEventListener('click', () => {
+      switchDay(-1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
     document.getElementById('navHome')?.addEventListener('click', () => {
+      switchDay(-1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
     document.getElementById('btnFab')?.addEventListener('click', openAddModal);
-    document.getElementById('navShare')?.addEventListener('click', openShareModal);
 
-    document.getElementById('btnBannerShare')?.addEventListener('click', () => {
-      dismissShareBanner();
-      openShareModal();
-    });
-    document.getElementById('btnBannerClose')?.addEventListener('click', dismissShareBanner);
+
 
     document.getElementById('dayTabsTrack')?.addEventListener('click', (e) => {
       const tab = e.target.closest('.day-tab');
@@ -848,7 +814,7 @@
     document.getElementById('btnDeleteCancel')?.addEventListener('click', closeAllModals);
     document.getElementById('btnDeleteConfirm')?.addEventListener('click', confirmDelete);
 
-    document.getElementById('btnCopyUrl')?.addEventListener('click', copyShareUrl);
+
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') closeAllModals();
@@ -856,6 +822,45 @@
 
     setupSwipeGestures();
     setupScrollHide();
+    setupCardObserver();
+  }
+
+  /* ── IntersectionObserver for card scroll-reveal ── */
+  function setupCardObserver() {
+    if (!('IntersectionObserver' in window)) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.remove('card-hidden');
+          entry.target.classList.add('card-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, {
+      rootMargin: '0px 0px -60px 0px',
+      threshold: 0.1
+    });
+
+    // Observe existing and future cards via MutationObserver
+    const container = document.getElementById('scheduleContainer');
+    if (!container) return;
+
+    function observeCards(root) {
+      root.querySelectorAll('.activity-card').forEach(card => {
+        if (!card.classList.contains('card-visible')) {
+          card.classList.add('card-hidden');
+          observer.observe(card);
+        }
+      });
+    }
+
+    observeCards(container);
+
+    const mutationObs = new MutationObserver(() => {
+      observeCards(container);
+    });
+    mutationObs.observe(container, { childList: true, subtree: true });
   }
 
   function escapeHtml(unsafe) {

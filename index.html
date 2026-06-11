@@ -5,9 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
-    <meta name="description" content="沖繩家族旅行行程規劃 — 即時協作共筆，分享連結即可一起編輯">
+    <meta name="description" content="沖繩家族旅行 2026 — 五天四夜完整行程規劃">
     <meta name="theme-color" content="#F5F1EB" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#161618" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#08080C" media="(prefers-color-scheme: dark)">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>沖繩輕旅 2026 — 行程共筆</title>
@@ -15,7 +15,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Noto+Sans+TC:wght@300;400;500;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Noto+Sans+TC:wght@300;400;500;700&display=swap"
         rel="stylesheet">
 
     <link rel="icon"
@@ -30,8 +30,10 @@
         <header class="top-bar" id="topBar">
             <div class="brand">
                 <span class="brand-text">OKINAWA</span>
-                <span class="brand-sub">2026年8月 · 家族旅行</span>
             </div>
+            <nav class="day-nav">
+                <div class="day-nav-track" id="dayTabsTrack"></div>
+            </nav>
             <div class="top-actions">
                 <div class="sync-indicator" id="syncIndicator" data-state="saved" title="已同步">
                     <span class="sync-dot"></span>
@@ -62,21 +64,9 @@
 
         <main class="main-content">
 
-            <div class="share-banner" id="shareBanner" style="display:none;">
-                <div class="share-banner-text">
-                    <strong>📡 即時協作已啟用</strong>
-                    分享此連結給家人，即可一起編輯行程
-                </div>
-                <button class="btn btn-primary" id="btnBannerShare">分享</button>
-                <button class="share-banner-close" id="btnBannerClose" aria-label="關閉">
-                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
-            </div>
-
             <section class="hero" id="heroSection">
+                <div class="hero-glow hero-glow--coral"></div>
+                <div class="hero-glow hero-glow--ocean"></div>
                 <div class="hero-content">
                     <h1 class="hero-title">Okinawa<br><em>輕旅</em></h1>
                     <div class="hero-meta">
@@ -99,10 +89,6 @@
                 </div>
             </section>
 
-            <nav class="day-nav">
-                <div class="day-nav-track" id="dayTabsTrack"></div>
-            </nav>
-
             <div class="schedule-container" id="scheduleContainer"></div>
         </main>
 
@@ -115,26 +101,15 @@
                 </svg>
                 <span>行程</span>
             </button>
-            <button class="nav-item btn-add-fab" id="btnFab" title="新增活動">
-                <div class="fab-inner">
-                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.5"
-                        fill="none" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
-                </div>
-            </button>
-            <button class="nav-item" id="navShare">
-                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="1.5" fill="none"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="18" cy="5" r="3"></circle>
-                    <circle cx="6" cy="12" r="3"></circle>
-                    <circle cx="18" cy="19" r="3"></circle>
-                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+            <button class="nav-item" id="btnFab" title="新增活動">
+                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="1.5"
+                    fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
-                <span>分享</span>
+                <span>新增</span>
             </button>
+
         </nav>
 
         <div class="modal-overlay" id="activityModal">
@@ -221,30 +196,7 @@
             </div>
         </div>
 
-        <div class="modal-overlay" id="shareModal">
-            <div class="modal">
-                <div class="modal-header">
-                    <h2 class="modal-title">分享行程</h2>
-                    <button class="icon-btn modal-close" aria-label="關閉">
-                        <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="1.5"
-                            fill="none" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg>
-                    </button>
-                </div>
-                <div class="share-section">
-                    <p class="share-desc">
-                        將下方連結分享給家人，任何人都可以透過此連結即時編輯行程。<br>
-                        修改會在幾秒內自動同步到所有人的畫面。
-                    </p>
-                    <div class="share-url-box">
-                        <input type="text" class="share-url-input" id="shareUrlInput" readonly>
-                        <button class="btn-copy" id="btnCopyUrl">複製連結</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+
 
         <div class="toast-container" id="toastContainer"></div>
     </div>
