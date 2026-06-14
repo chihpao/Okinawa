@@ -369,8 +369,8 @@
 
       return `<div class="day-view${dayIndex === activeDay ? ' active' : ''}" data-day-index="${dayIndex}">
         <div class="day-info">
-          ${day.subtitle ? `<h2 class="day-info-title" style="font-size: 1.6rem; color: var(--accent);">${escapeHtml(day.subtitle)}</h2>` : ''}
-          <div class="day-badges" style="margin-top: 0.5rem;">${badges}</div>
+          ${day.subtitle ? `<h2 class="day-info-title" style="font-size: 1.4rem; color: var(--accent);">${escapeHtml(day.subtitle)}</h2>` : ''}
+          <div class="day-badges">${badges}</div>
         </div>
         <div class="timeline">${timeline}</div>
       </div>`;
@@ -586,12 +586,39 @@
 
 
 
+  function getSmartDefaultDay() {
+    // If viewing a day, use that day; otherwise pick today's match or day 1
+    if (activeDay >= 0 && activeDay < appData.days.length) return activeDay;
+    const todayStr = new Date().toISOString().split('T')[0];
+    const todayIdx = appData.days.findIndex(d => d.date === todayStr);
+    return todayIdx >= 0 ? todayIdx : 0;
+  }
+
+  function renderDayChips(selectedIndex) {
+    const container = document.getElementById('dayChips');
+    if (!container) return;
+    container.innerHTML = appData.days.map((day, i) => {
+      const date = new Date(day.date + 'T00:00:00');
+      const label = `${date.getMonth() + 1}/${date.getDate()} ${day.subtitle || day.label}`;
+      return `<button type="button" class="day-chip${i === selectedIndex ? ' active' : ''}" data-day-idx="${i}">${label}</button>`;
+    }).join('');
+
+    container.querySelectorAll('.day-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        editingDayIndex = parseInt(chip.dataset.dayIdx, 10);
+        container.querySelectorAll('.day-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+      });
+    });
+  }
+
   function openAddModal() {
     editingActivityId = null;
-    editingDayIndex = activeDay;
+    editingDayIndex = getSmartDefaultDay();
     resetForm();
+    renderDayChips(editingDayIndex);
     const title = document.getElementById('modalTitle');
-    if (title) title.textContent = `新增活動 — ${appData.days[activeDay].label}`;
+    if (title) title.textContent = '新增活動';
     openModal('activityModal');
   }
 
@@ -601,6 +628,7 @@
     const activity = appData.days[dayIndex].activities.find(a => a.id === activityId);
     if (!activity) return;
 
+    renderDayChips(dayIndex);
     document.getElementById('actPeriod').value = activity.period || '上午';
     document.getElementById('actTime').value = activity.time || '';
     document.getElementById('actTitle').value = activity.title || '';
