@@ -144,6 +144,16 @@
 /* ─── Global Reset ─── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* ─── Custom Selection ─── */
+::selection {
+  background: rgba(224, 105, 78, 0.25);
+  color: var(--text-primary);
+}
+
+[data-theme="light"] ::selection {
+  background: rgba(200, 75, 47, 0.18);
+}
+
 html {
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
@@ -221,9 +231,9 @@ a { color: inherit; text-decoration: none; -webkit-tap-highlight-color: transpar
   border-bottom: 1px solid var(--glass-border);
   display: flex;
   align-items: center;
-  padding-left: 1rem;
+  padding-left: 0.75rem;
   padding-right: 0.4rem;
-  gap: 0.4rem;
+  gap: 0.3rem;
   z-index: 100;
   transition: transform 0.4s var(--ease-expo), background-color 0.5s;
 }
@@ -263,6 +273,13 @@ a { color: inherit; text-decoration: none; -webkit-tap-highlight-color: transpar
   -webkit-text-fill-color: var(--text-primary);
 }
 
+/* Mobile: show "O", Desktop: show "OKINAWA" */
+.brand-short {
+  display: none;
+  font-size: 1.3rem;
+  letter-spacing: 0;
+}
+
 .brand-sub {
   font-size: 0.6rem;
   color: var(--text-tertiary);
@@ -289,6 +306,10 @@ a { color: inherit; text-decoration: none; -webkit-tap-highlight-color: transpar
   letter-spacing: 0.03em;
   transition: all 0.3s;
   cursor: default;
+}
+
+.sync-label {
+  transition: opacity 0.2s, max-width 0.3s;
 }
 
 .sync-indicator .sync-dot {
@@ -542,14 +563,15 @@ a { color: inherit; text-decoration: none; -webkit-tap-highlight-color: transpar
   flex-direction: column;
   align-items: center;
   gap: 0.08rem;
-  padding: 0.3rem 0.6rem;
+  padding: 0.3rem 0.5rem;
   border-radius: var(--radius-xs);
   opacity: 0.45;
   transition: all 0.3s var(--ease-expo);
   cursor: pointer;
   scroll-snap-align: center;
-  min-width: 52px;
+  min-width: 44px;
   border: 1px solid transparent;
+  position: relative;
 }
 
 .day-tab:hover {
@@ -564,6 +586,19 @@ a { color: inherit; text-decoration: none; -webkit-tap-highlight-color: transpar
   color: #fff;
   border-color: transparent;
   box-shadow: var(--shadow-glow-coral);
+}
+
+/* Active tab bottom indicator */
+.day-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 25%;
+  width: 50%;
+  height: 2px;
+  background: #fff;
+  border-radius: var(--radius-full);
+  opacity: 0.6;
 }
 
 [data-theme="light"] .day-tab.active {
@@ -689,6 +724,7 @@ a { color: inherit; text-decoration: none; -webkit-tap-highlight-color: transpar
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
   padding: 1.2rem;
+  padding-left: 1.35rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -696,11 +732,22 @@ a { color: inherit; text-decoration: none; -webkit-tap-highlight-color: transpar
   transition: transform 0.35s var(--ease-spring),
               box-shadow 0.35s var(--ease-smooth),
               border-color 0.35s,
+              border-left-width 0.2s,
               background 0.35s;
   overflow: hidden;
   opacity: 0;
   animation: cardEnter 0.6s var(--ease-out-quint) forwards;
+  /* Left color strip — default */
+  border-left: 3px solid var(--glass-border);
 }
+
+/* Category-specific left color strips */
+.activity-card[data-cat="sightseeing"] { border-left-color: var(--cat-sightseeing); }
+.activity-card[data-cat="food"] { border-left-color: var(--cat-food); }
+.activity-card[data-cat="shopping"] { border-left-color: var(--cat-shopping); }
+.activity-card[data-cat="transport"] { border-left-color: var(--cat-transport); }
+.activity-card[data-cat="hotel"] { border-left-color: var(--cat-hotel); }
+.activity-card[data-cat="leisure"] { border-left-color: var(--cat-leisure); }
 
 .activity-card::before {
   content: '';
@@ -716,7 +763,16 @@ a { color: inherit; text-decoration: none; -webkit-tap-highlight-color: transpar
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   border-color: var(--border-color);
+  border-left-width: 3px;
 }
+
+/* Preserve left color in light mode */
+[data-theme="light"] .activity-card[data-cat="sightseeing"] { border-left-color: var(--cat-sightseeing); }
+[data-theme="light"] .activity-card[data-cat="food"] { border-left-color: var(--cat-food); }
+[data-theme="light"] .activity-card[data-cat="shopping"] { border-left-color: var(--cat-shopping); }
+[data-theme="light"] .activity-card[data-cat="transport"] { border-left-color: var(--cat-transport); }
+[data-theme="light"] .activity-card[data-cat="hotel"] { border-left-color: var(--cat-hotel); }
+[data-theme="light"] .activity-card[data-cat="leisure"] { border-left-color: var(--cat-leisure); }
 
 [data-theme="light"] .activity-card::before { display: none; }
 
@@ -754,6 +810,7 @@ a { color: inherit; text-decoration: none; -webkit-tap-highlight-color: transpar
 .activity-card:hover {
   transform: translateY(-3px);
   border-color: var(--glass-border-hover);
+  border-left-width: 4px;
 }
 
 .activity-card:active {
@@ -851,7 +908,9 @@ a { color: inherit; text-decoration: none; -webkit-tap-highlight-color: transpar
 }
 
 .btn-card-sm {
-  width: 34px; height: 34px;
+  width: 38px; height: 38px;
+  min-width: 38px;
+  min-height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -870,7 +929,7 @@ a { color: inherit; text-decoration: none; -webkit-tap-highlight-color: transpar
   color: var(--danger);
 }
 
-.btn-card-sm svg { width: 14px; height: 14px; }
+.btn-card-sm svg { width: 15px; height: 15px; }
 
 .card-desc {
   font-size: 0.85rem;
@@ -883,24 +942,26 @@ a { color: inherit; text-decoration: none; -webkit-tap-highlight-color: transpar
 .link-map {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  font-size: 0.72rem;
+  gap: 0.35rem;
+  font-size: 0.78rem;
   font-weight: 600;
   color: var(--teal);
-  padding: 0.3rem 0.6rem;
+  padding: 0.45rem 0.85rem;
   border-radius: var(--radius-full);
   border: 1px solid var(--glass-border);
   background: var(--glass-bg);
   transition: all 0.2s;
+  min-height: 36px;
 }
 
 .link-map:hover {
   background: var(--glass-bg-strong);
   border-color: var(--teal);
   box-shadow: 0 0 12px rgba(43, 168, 143, 0.15);
+  transform: translateY(-1px);
 }
 
-.link-map svg { width: 12px; height: 12px; }
+.link-map svg { width: 13px; height: 13px; }
 
 .card-notes {
   margin-top: 0.4rem;
@@ -932,8 +993,8 @@ a { color: inherit; text-decoration: none; -webkit-tap-highlight-color: transpar
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 1.5rem;
-  padding: 0.5rem 1.5rem;
+  gap: 1.2rem;
+  padding: 0.45rem 1.4rem;
   z-index: 100;
   box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
   transition: transform 0.4s var(--ease-spring), opacity 0.4s;
@@ -973,6 +1034,31 @@ a { color: inherit; text-decoration: none; -webkit-tap-highlight-color: transpar
 
 .nav-item svg { width: 22px; height: 22px; }
 .nav-item.active { color: var(--text-primary); }
+
+/* FAB — "新增" button glow */
+#btnFab {
+  color: var(--coral);
+  position: relative;
+}
+
+#btnFab::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(224, 105, 78, 0.2) 0%, transparent 70%);
+  animation: fabPulse 2.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+[data-theme="light"] #btnFab::before {
+  background: radial-gradient(circle, rgba(200, 75, 47, 0.12) 0%, transparent 70%);
+}
+
+@keyframes fabPulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.3); }
+}
 
 /* ═══ Modals — Glass Sheet ═══ */
 .modal-overlay {
@@ -1084,21 +1170,8 @@ a { color: inherit; text-decoration: none; -webkit-tap-highlight-color: transpar
   justify-content: center;
 }
 
-/* Share Modal */
+/* Share Modal — cleaned orphan CSS */
 .share-section { margin: 1.25rem 0; }
-  color: var(--text-primary);
-  outline: none;
-  min-width: 0;
-  transition: border-color 0.2s;
-}
-
-[data-theme="light"] .share-url-input {
-  background: var(--bg-primary);
-}
-
-.share-url-input:focus {
-  border-color: var(--accent);
-}
 
 /* ═══ Forms ═══ */
 .clean-form {
@@ -1288,10 +1361,14 @@ textarea.form-input { resize: vertical; min-height: 56px; }
 /* ═══ Empty / Loading States ═══ */
 .empty-state {
   text-align: center;
-  padding: 3.5rem 1rem;
+  padding: 3.5rem 1.5rem;
   font-size: 1rem;
   color: var(--text-tertiary);
   font-style: italic;
+  background: var(--glass-bg);
+  border: 1px dashed var(--glass-border);
+  border-radius: var(--radius-lg);
+  line-height: 1.8;
 }
 
 .loading {
@@ -1329,15 +1406,43 @@ textarea.form-input { resize: vertical; min-height: 56px; }
 /* ═══ Responsive ═══ */
 @media (max-width: 639px) {
   .hide-mobile { display: none; }
+
+  /* Brand: show O on mobile */
+  .brand-full { display: none; }
+  .brand-short { display: inline; }
+
+  /* Sync: hide label on mobile */
+  .sync-label { display: none; }
+  .sync-indicator { padding: 0.25rem 0.35rem; }
+
+  /* Day tabs: compact for 5 tabs visible */
   .day-tab .tab-date { display: none; }
-  .day-tab .tab-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 2px; }
-  .day-tab { gap: 0; padding: 0.4rem 0.1rem; min-width: 36px; }
+  .day-tab .tab-title { font-size: 1rem; font-weight: 700; margin-bottom: 0; }
+  .day-tab { gap: 0; padding: 0.35rem 0.15rem; min-width: 32px; }
+  .day-nav-track { gap: 0.15rem; }
+
+  /* Top bar tighter */
+  .top-bar { padding-left: 0.6rem; padding-right: 0.3rem; gap: 0.2rem; }
+
+  /* Hero: reduce vertical space */
+  .hero { gap: 1.5rem; margin-bottom: 2rem; }
+  .hero-title { font-size: clamp(3rem, 13vw, 5rem); }
+
+  /* Cards: slightly tighter */
+  .activity-card { padding: 1rem 1rem 1rem 1.15rem; }
+
+  /* Modal: more breathing room */
+  .modal { padding: 1.25rem 1.25rem calc(1.5rem + var(--safe-bottom)); }
 }
 
 @media (min-width: 640px) {
   .main-content { padding: 2.5rem 2rem; }
 
-  .activity-card { padding: 1.25rem 1.25rem 1.25rem 1.35rem; }
+  /* Desktop: show full brand, hide short */
+  .brand-full { display: inline; }
+  .brand-short { display: none; }
+
+  .activity-card { padding: 1.25rem 1.25rem 1.25rem 1.4rem; }
   .countdown-block .val { font-size: 2.6rem; }
 }
 
@@ -1347,6 +1452,10 @@ textarea.form-input { resize: vertical; min-height: 56px; }
   .confirm-actions .btn { width: 100%; }
   .modal-footer { flex-direction: column; }
   .modal-footer .btn { width: 100%; }
+
+  /* Extra-small screens: even tighter tabs */
+  .day-tab { min-width: 28px; padding: 0.3rem 0.1rem; }
+  .day-tab .tab-title { font-size: 0.9rem; }
 }
 
 /* ═══ Print ═══ */

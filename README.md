@@ -1,50 +1,50 @@
-﻿# ? 8??蝜抵???(Okinawa Trip Planner)
+# ☀ 8月沖繩輕旅（Okinawa Trip Planner）
 
-撠摰嗆?瘝鼎??閮剛???*頛?蝝敺垢???雿?*銵?閬?蝬脩???
+一個精緻的五天四夜 *家族旅行行程共筆* 網頁應用程式。
 
-?? **https://chihpao.github.io/Okinawa/**
+🔗 **https://chihpao.github.io/Okinawa/**
 
-## 撠??寡
+## 主要特色
 
-### Zero-Backend ?單???
-- 蝝?蝡荔?Vanilla JS + CSS + HTML嚗??函蔡??GitHub Pages??
-- ?? [Google Apps Script](https://jsonblob.com/) REST API ?脣??梁鞈?嚗??赤摰Ｗ鈭怠?銝隞質?蝔?
-- 蝺刻摩敺?2 蝘??Debounce ?郊?喲蝡荔??嗡?鋆蔭瘥?15 蝘憚閰Ｘ?啜?
+### Zero-Backend 架構設計
+- 純前端 Vanilla JS + CSS + HTML，靜態部署至 GitHub Pages
+- 透過 [Google Apps Script](https://script.google.com/) REST API 實現雲端資料同步，無需自建伺服器或資料庫
+- 智慧節流：2 秒 Debounce 寫入防止頻繁呼叫、15 秒間隔輪詢更新
 
-### ?曆誨??Mobile-first 閮剛?
-- **??蝝??**嚗誑瘝鼎?喟絞蝝?蝜??粹????梁? `#C84B2F`??蝬?`#1F8C78`????`#C9903D`??
-- 瘛梯璅∪??芸??菜葫 + ??????
-- 撠汗??皛??/ 銝??箇嚗?憭批??梯?蝛粹???
-- 撌血皛???憭拇??
-- ?閮??典?＊蝷箄??Ｗ?潛?????
+### 高質感 Mobile-first 設計
+- **深色優先**：精選配色系統——朱紅 `#C84B2F`、海藍 `#1F8C78`、琥珀 `#C9903D`
+- 毛玻璃質感卡片 + 微動態效果
+- 一鍵切換 深色 / 淺色 模式，含流暢的過場動畫
+- 手勢滑動切換天數
+- 響應式設計完美適配手機與桌面裝置
 
-### ?渲死 CRUD ??
-- ?∠?銝?交?靘楊頛?/ ?芷????
-- Bottom Sheet Modal ?啣? / 蝺刻摩瘣餃???
-- ?芷??蝣箄?撠店獢??脫迫隤文??
+### 完整 CRUD 功能
+- 支援新增活動、即時編輯 / 刪除操作
+- Bottom Sheet Modal 表單 / 確認對話框設計
+- 刪除需確認防止誤觸操作
 
-## 撠??嗆?
+## 主要檔案
 
-| 瑼? | 隤芣? |
+| 檔案 | 說明 |
 |------|------|
-| `index.html` | ?蝯?嚗???璅惜??Modal |
-| `index.css` | 閮剛?蝟餌絞嚗SS Variables????琿?????|
-| `app.js` | ??摩嚗RUD?蝡臬?甇乓?隞嗥??|
-| `data.json` | ?身銵?鞈?蝯?嚗??剁? |
+| `index.html` | 頁面結構，含導覽列與 Modal |
+| `index.css` | 設計系統：CSS Variables、動畫、響應式 |
+| `app.js` | 核心邏輯：CRUD、雲端同步、倒數計時 |
+| `data.json` | 預設行程資料結構（僅備份） |
 
-## ??蝵?
+## 本地開發
 
-**?砍皜祈岫**嚗?
+**啟動伺服器**：
 ```bash
 npx -y serve -l 3000 .
 ```
 
-**?函蔡**嚗? `main` ?嚗itHub Pages ?芸??函蔡??
+**部署**：推送 `main` 分支，GitHub Pages 自動部署。
 
-## ?銵ㄖ
+## 技術棧
 
 - Vanilla JavaScript (ES6+)
 - CSS3 with CSS Custom Properties
 - Google Fonts (Outfit, Playfair Display, Noto Sans TC)
-- Google Apps Script API (??霅?REST ?脣?)
-- GitHub Pages (??閮恣)
+- Google Apps Script API (自建 REST 後端)
+- GitHub Pages (靜態部署)
