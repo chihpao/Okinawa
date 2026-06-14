@@ -496,7 +496,7 @@
 
     const hero = document.getElementById('heroSection');
     if (hero) {
-      hero.style.display = index === -1 ? 'block' : 'none';
+      hero.style.display = index === -1 ? 'flex' : 'none';
     }
 
     const activeTab = document.querySelector('.day-tab.active');
