@@ -50,15 +50,15 @@
   };
   const DEFAULT_DATA = {
     "trip": {
-      "title": "☀ 8月沖繩輕旅 ☀",
+      "title": "8月沖繩輕旅",
       "startDate": "2026-08-13",
       "endDate": "2026-08-17",
       "travelers": [
-        { "name": "姊姊", "emoji": "👩", "departureDate": "2026-08-16" },
-        { "name": "姊夫", "emoji": "👨", "departureDate": "2026-08-16" },
-        { "name": "老媽", "emoji": "👩‍🦳", "departureDate": "2026-08-17" },
-        { "name": "阿保", "emoji": "🧑", "departureDate": "2026-08-17" },
-        { "name": "孜仁", "emoji": "🧒", "departureDate": "2026-08-17" }
+        { "name": "姊姊", "departureDate": "2026-08-16" },
+        { "name": "姊夫", "departureDate": "2026-08-16" },
+        { "name": "老媽", "departureDate": "2026-08-17" },
+        { "name": "阿保", "departureDate": "2026-08-17" },
+        { "name": "孜仁", "departureDate": "2026-08-17" }
       ]
     },
     "days": [
@@ -264,6 +264,8 @@
       renderAll();
       setupEventListeners();
       startCountdown();
+      initCustomCursor();
+      initMagneticButtons();
       removePageLoader();
     } catch (err) {
       console.error('Init error:', err);
@@ -373,15 +375,15 @@
       ? `<span>${escapeHtml(activity.notes)}</span>`
       : '';
     return `<div class="activity-item observer-target" data-id="${activity.id}">
-      <div class="act-time">${escapeHtml(activity.time || activity.period)}</div>
+      <div class="act-time"><span class="time-inner">${escapeHtml(activity.time || activity.period)}</span></div>
       <div class="act-content">
         <div class="act-header">
           <div class="act-title-wrapper">
             <div class="act-icon">${cat.svg}</div>
-            <div class="act-title">${escapeHtml(activity.title)}</div>
+            <div class="act-title magnetic-text">${escapeHtml(activity.title)}</div>
           </div>
           <div class="act-actions">
-            <button class="act-btn" data-action="edit" data-id="${activity.id}" data-day="${dayIndex}" title="編輯">
+            <button class="act-btn magnetic-btn" data-action="edit" data-id="${activity.id}" data-day="${dayIndex}" title="編輯">
               ${SVGS.edit}
             </button>
             <button class="act-btn btn-delete" data-action="delete" data-id="${activity.id}" data-day="${dayIndex}" title="刪除">
@@ -479,7 +481,7 @@
         }
       });
     }, {
-      rootMargin: '0px 0px -40px 0px',
+      rootMargin: '0px 0px -100px 0px',
       threshold: 0.1
     });
     targets.forEach(target => {
@@ -569,6 +571,7 @@
     closeAllModals();
     renderDayViews();
     switchDay(activeDay);
+    initMagneticButtons();
     showToast('✅ 已儲存');
   }
   function requestDelete(activityId, dayIndex) {
@@ -584,6 +587,7 @@
     closeAllModals();
     renderDayViews();
     switchDay(activeDay);
+    initMagneticButtons();
     showToast('🗑 已刪除');
     pendingDeleteId = null;
     pendingDeleteDay = null;
@@ -715,5 +719,83 @@
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
   }
+
+  // --- Custom Cursor & Interactions ---
+  let cursorX = 0, cursorY = 0;
+  let followerX = 0, followerY = 0;
+
+  function initCustomCursor() {
+    const cursor = document.getElementById('customCursor');
+    const follower = document.getElementById('customCursorFollower');
+    if (!cursor || !follower) return;
+
+    // Only enable on non-touch devices
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+      cursor.style.display = 'none';
+      follower.style.display = 'none';
+      return;
+    }
+
+    document.addEventListener('mousemove', (e) => {
+      cursorX = e.clientX;
+      cursorY = e.clientY;
+      cursor.style.transform = `translate3d(${cursorX}px, ${cursorY}px, 0)`;
+    });
+
+    function renderFollower() {
+      followerX += (cursorX - followerX) * 0.15;
+      followerY += (cursorY - followerY) * 0.15;
+      follower.style.transform = `translate3d(${followerX}px, ${followerY}px, 0)`;
+      requestAnimationFrame(renderFollower);
+    }
+    requestAnimationFrame(renderFollower);
+
+    setupCursorHoverEffects(cursor, follower);
+  }
+
+  function setupCursorHoverEffects(cursor, follower) {
+    const attachHover = () => {
+      document.querySelectorAll('a, button, .day-tab, .day-chip, .magnetic-text, .brand').forEach(el => {
+        if(el.dataset.cursorAttached) return;
+        el.dataset.cursorAttached = 'true';
+        
+        el.addEventListener('mouseenter', () => {
+          cursor.classList.add('hover');
+          follower.classList.add('hover');
+        });
+        el.addEventListener('mouseleave', () => {
+          cursor.classList.remove('hover');
+          follower.classList.remove('hover');
+        });
+      });
+    };
+    
+    attachHover();
+    // Re-attach after dom updates
+    const observer = new MutationObserver(() => { attachHover(); });
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+
+  function initMagneticButtons() {
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) return;
+    
+    document.querySelectorAll('.magnetic-btn, .nav-item, .modal-close').forEach(btn => {
+      if(btn.dataset.magneticAttached) return;
+      btn.dataset.magneticAttached = 'true';
+      
+      btn.addEventListener('mousemove', (e) => {
+        const rect = btn.getBoundingClientRect();
+        const h = rect.width / 2;
+        const x = e.clientX - rect.left - h;
+        const y = e.clientY - rect.top - h;
+        btn.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
+      });
+      
+      btn.addEventListener('mouseleave', () => {
+        btn.style.transform = 'translate(0px, 0px)';
+      });
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', initApp);
 })();

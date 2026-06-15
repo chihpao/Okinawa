@@ -19,7 +19,7 @@
         rel="stylesheet">
 
     <link rel="icon"
-        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2242%22 fill=%22%23C04528%22/></svg>">
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><path d=%22M50,10 A40,40 0 1,1 10,50 A40,40 0 0,1 50,10 Z%22 fill=%22none%22 stroke=%22%23FF5A5F%22 stroke-width=%228%22/><path d=%22M20,60 Q35,40 50,60 T80,60%22 fill=%22none%22 stroke=%22%230A1128%22 stroke-width=%228%22 stroke-linecap=%22round%22/></svg>">
 
     <link rel="stylesheet" href="index.css">
 </head>
@@ -27,6 +27,8 @@
 <body>
     <div class="loader-overlay" id="pageLoader">
         <div class="loader-text"><span>OKINAWA</span></div>
+        <div class="loader-progress"></div>
+        <div class="loader-subtitle">Loading itinerary</div>
     </div>
 
     <div id="app">
@@ -108,22 +110,22 @@
                             <div class="form-group">
                                 <label class="form-label" for="actCategory">類別</label>
                                 <select class="form-select" id="actCategory">
-                                    <option value="sightseeing">🏛 觀光</option>
-                                    <option value="food">🍜 美食</option>
-                                    <option value="shopping">🛍 購物</option>
-                                    <option value="transport">✈️ 交通</option>
-                                    <option value="hotel">🏨 住宿</option>
-                                    <option value="leisure">😊 休閒</option>
+                                    <option value="sightseeing">觀光</option>
+                                    <option value="food">美食</option>
+                                    <option value="shopping">購物</option>
+                                    <option value="transport">交通</option>
+                                    <option value="hotel">住宿</option>
+                                    <option value="leisure">休閒</option>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label class="form-label" for="actPeriod">時段</label>
                                 <select class="form-select" id="actPeriod" required>
-                                    <option value="上午">☀️ 上午</option>
-                                    <option value="下午">🌤 下午</option>
-                                    <option value="傍晚">🌇 傍晚</option>
-                                    <option value="晚上">🌙 晚上</option>
-                                    <option value="夜間">🌃 夜間</option>
+                                    <option value="上午">上午</option>
+                                    <option value="下午">下午</option>
+                                    <option value="傍晚">傍晚</option>
+                                    <option value="晚上">晚上</option>
+                                    <option value="夜間">夜間</option>
                                 </select>
                             </div>
                         </div>
@@ -157,6 +159,10 @@
 
         <div class="toast-container" id="toastContainer"></div>
     </div>
+    
+    <div class="custom-cursor" id="customCursor"></div>
+    <div class="custom-cursor-follower" id="customCursorFollower"></div>
+    
     <script src="app.js"></script>
 </body>
 
