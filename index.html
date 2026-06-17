@@ -1,40 +1,41 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-TW" data-theme="light">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
     <meta name="description" content="沖繩家族旅行 2026 — 五天四夜完整行程規劃">
-    <meta name="theme-color" content="#F3EFE8" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#0A0A10" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#F7F5F0" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0A1628" media="(prefers-color-scheme: dark)">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>沖繩 2026 — 行程共筆</title>
+    <title>沖繩 2026 — 家族旅行企劃</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Noto+Sans+TC:wght@300;400;500;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Noto+Sans+TC:wght@300;400;500;700&display=swap"
         rel="stylesheet">
 
     <link rel="icon"
-        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><path d=%22M50,10 A40,40 0 1,1 10,50 A40,40 0 0,1 50,10 Z%22 fill=%22none%22 stroke=%22%23FF5A5F%22 stroke-width=%228%22/><path d=%22M20,60 Q35,40 50,60 T80,60%22 fill=%22none%22 stroke=%22%230A1128%22 stroke-width=%228%22 stroke-linecap=%22round%22/></svg>">
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2242%22 fill=%22none%22 stroke=%22%23E8544C%22 stroke-width=%228%22/><path d=%22M20,55 Q35,35 50,55 T80,55%22 fill=%22none%22 stroke=%22%230A1628%22 stroke-width=%227%22 stroke-linecap=%22round%22/></svg>">
 
     <link rel="stylesheet" href="index.css">
 </head>
 
 <body>
+    <!-- Page Loader -->
     <div class="loader-overlay" id="pageLoader">
-        <div class="loader-text"><span>OKINAWA</span></div>
-        <div class="loader-progress"></div>
-        <div class="loader-subtitle">Loading itinerary</div>
+        <div class="loader-logo"><span>OKINAWA</span></div>
+        <div class="loader-bar"></div>
+        <div class="loader-tagline">OKINAWA · 2026</div>
     </div>
 
     <div id="app">
-
+        <!-- Top Bar -->
         <header class="top-bar" id="topBar">
-            <div class="brand">
+            <div class="brand" id="brandHome">
+                <span class="brand-mark"></span>
                 <span class="brand-text">OKINAWA 2026</span>
             </div>
             <div class="top-actions">
@@ -46,36 +47,49 @@
         </header>
 
         <main class="main-content">
-
+            <!-- Hero -->
             <section class="container hero" id="heroSection">
-                <h1 class="hero-title">Okinawa<br>Trip.</h1>
+                <div class="wave-bg" aria-hidden="true">
+                    <svg class="wave-svg" viewBox="0 0 1440 120" preserveAspectRatio="none" fill="currentColor" style="color:rgba(59,125,216,.06)">
+                        <path d="M0,60 C240,120 480,0 720,60 C960,120 1200,0 1440,60 L1440,120 L0,120 Z"/>
+                    </svg>
+                    <svg class="wave-svg" viewBox="0 0 1440 120" preserveAspectRatio="none" fill="currentColor" style="color:rgba(232,84,76,.04)">
+                        <path d="M0,80 C360,0 720,120 1080,40 C1260,0 1380,80 1440,60 L1440,120 L0,120 Z"/>
+                    </svg>
+                    <svg class="wave-svg" viewBox="0 0 1440 120" preserveAspectRatio="none" fill="currentColor" style="color:rgba(46,155,142,.03)">
+                        <path d="M0,40 C180,100 540,20 900,70 C1080,100 1260,40 1440,80 L1440,120 L0,120 Z"/>
+                    </svg>
+                </div>
+                <div class="particles" id="heroParticles" aria-hidden="true"></div>
+
+                <p class="hero-eyebrow">2026.08.13 — 08.17 . 沖繩</p>
+                <h1 class="hero-title">Okinawa<br>Trip<span class="dot">.</span></h1>
+                <p class="hero-subtitle">8 月 · 沖繩 · 五天四夜</p>
 
                 <div class="dashboard-panel">
                     <div class="countdown-group" id="countdownGroup">
-                        <div class="countdown-block"><span class="val" id="countDays">-</span><span
-                                class="lbl">天</span></div>
-                        <div class="countdown-block"><span class="val" id="countHours">-</span><span
-                                class="lbl">時</span></div>
-                        <div class="countdown-block"><span class="val" id="countMins">-</span><span
-                                class="lbl">分</span></div>
-                        <div class="countdown-block"><span class="val" id="countSecs">-</span><span
-                                class="lbl">秒</span></div>
+                        <div class="countdown-block"><span class="val" id="countDays">-</span><span class="lbl">天</span></div>
+                        <div class="countdown-block"><span class="val" id="countHours">-</span><span class="lbl">時</span></div>
+                        <div class="countdown-block"><span class="val" id="countMins">-</span><span class="lbl">分</span></div>
+                        <div class="countdown-block"><span class="val" id="countSecs">-</span><span class="lbl">秒</span></div>
                     </div>
                     <div class="travelers-list" id="heroTravelers"></div>
                 </div>
             </section>
 
+            <!-- Day Navigation -->
             <div class="day-nav-container">
                 <div class="container day-nav-track" id="dayTabsTrack"></div>
             </div>
 
+            <!-- Day Views -->
             <div class="container schedule-container" id="scheduleContainer"></div>
         </main>
 
+        <!-- Bottom Nav -->
         <nav class="bottom-nav" id="bottomNav">
-            <button class="nav-item" id="btnFab" title="新增活動">
-                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2"
-                    fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <button class="nav-item primary" id="btnFab" title="新增活動">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
@@ -83,57 +97,42 @@
             </button>
         </nav>
 
+        <!-- Activity Modal -->
         <div class="modal-overlay" id="activityModal">
             <div class="modal">
                 <div class="modal-header">
                     <h2 class="modal-title" id="modalTitle">新增活動</h2>
                     <button class="icon-btn modal-close" aria-label="關閉">
-                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5"
-                            fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="18" y1="6" x2="6" y2="18"></line>
                             <line x1="6" y1="6" x2="18" y2="18"></line>
                         </svg>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="activityForm" class="clean-form">
+                    <form id="activityForm" class="clean-form" autocomplete="off">
                         <div class="form-group">
                             <label class="form-label">日期</label>
                             <div class="day-chips" id="dayChips"></div>
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="actTitle">活動名稱 *</label>
-                            <input class="form-input" type="text" id="actTitle" placeholder="例：美麗海水族館"
-                                required>
+                            <input class="form-input" type="text" id="actTitle" placeholder="例：美麗海水族館" required>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
-                                <label class="form-label" for="actCategory">類別</label>
-                                <select class="form-select" id="actCategory">
-                                    <option value="sightseeing">觀光</option>
-                                    <option value="food">美食</option>
-                                    <option value="shopping">購物</option>
-                                    <option value="transport">交通</option>
-                                    <option value="hotel">住宿</option>
-                                    <option value="leisure">休閒</option>
-                                </select>
+                                <label class="form-label" for="actStartTime">起始時間</label>
+                                <input class="form-input" type="time" id="actStartTime">
                             </div>
                             <div class="form-group">
-                                <label class="form-label" for="actPeriod">時段</label>
-                                <select class="form-select" id="actPeriod" required>
-                                    <option value="上午">上午</option>
-                                    <option value="下午">下午</option>
-                                    <option value="傍晚">傍晚</option>
-                                    <option value="晚上">晚上</option>
-                                    <option value="夜間">夜間</option>
-                                </select>
+                                <label class="form-label" for="actEndTime">結束時間</label>
+                                <input class="form-input" type="time" id="actEndTime">
                             </div>
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="actDesc">備註</label>
                             <input class="form-input" type="text" id="actDesc" placeholder="補充說明（選填）">
                         </div>
-                        <input type="hidden" id="actTime" value="">
                         <input type="hidden" id="actMapUrl" value="">
                         <input type="hidden" id="actNotes" value="">
                     </form>
@@ -145,9 +144,10 @@
             </div>
         </div>
 
+        <!-- Delete Modal -->
         <div class="modal-overlay" id="deleteModal">
             <div class="modal modal-confirm">
-                <div class="confirm-icon">🗑️</div>
+                <div class="confirm-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
                 <h3 class="confirm-title">確定要刪除嗎？</h3>
                 <p class="confirm-desc">此操作無法復原</p>
                 <div class="confirm-actions">
@@ -157,12 +157,21 @@
             </div>
         </div>
 
+        <!-- Toast Container -->
         <div class="toast-container" id="toastContainer"></div>
+
+        <!-- Back to Top -->
+        <button class="back-to-top" id="backToTop" title="回到頂端" aria-label="回到頂端">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="18 15 12 9 6 15"/>
+            </svg>
+        </button>
     </div>
-    
+
+    <!-- Custom Cursor -->
     <div class="custom-cursor" id="customCursor"></div>
     <div class="custom-cursor-follower" id="customCursorFollower"></div>
-    
+
     <script src="app.js"></script>
 </body>
 
