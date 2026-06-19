@@ -101,7 +101,7 @@
      ═══════════════════════════════════════════ */
   const GAS_URL = 'https://script.google.com/macros/s/AKfycbyyOxIV_zj1nLN97jCWl8uPY1ecYPDKkbHd3cUjrEH86cPhbphzFL_GzecPzGSSopu5/exec';
   const CloudSync = {
-    pollInterval: null, syncTimeout: null, lastKnownHash: null, isSyncing: false,
+    pollInterval: null, syncTimeout: null, lastKnownHash: null, isSyncing: false, needsSync: false,
     POLL_MS: 15000, DEBOUNCE_MS: 2000,
     init() { console.log('[Sync] Using Google Apps Script Backend'); },
     url() { return GAS_URL; },
@@ -114,8 +114,11 @@
       label.textContent = labels[state] || '';
     },
     async syncToCloud() {
-      if (this.isSyncing) return;
-      this.isSyncing = true; this.setState('syncing');
+      if (this.isSyncing) {
+        this.needsSync = true;
+        return;
+      }
+      this.isSyncing = true; this.setState('syncing'); this.needsSync = false;
       try {
         appData._lastModified = Date.now();
         appData._modifiedBy = getDeviceId();
@@ -127,7 +130,12 @@
         console.log('[Sync] Pushed to cloud');
       } catch (err) {
         console.error('[Sync] Push failed:', err); this.setState('offline');
-      } finally { this.isSyncing = false; }
+      } finally {
+        this.isSyncing = false;
+        if (this.needsSync) {
+          this.scheduleSave();
+        }
+      }
     },
     async syncFromCloud(silent = false) {
       try {
@@ -335,9 +343,9 @@
 
   function renderActivityCard(activity, dayIndex) {
     const mapHtml = activity.mapUrl
-      ? `<a href="${escapeHtml(activity.mapUrl)}" target="_blank" rel="noopener noreferrer">${SVGS.map} Google Maps</a>`
+      ? `<a href="${escapeHtml(activity.mapUrl)}" target="_blank" rel="noopener noreferrer">地標地圖</a>`
       : '';
-    const notesHtml = activity.notes ? `<span>${escapeHtml(activity.notes)}</span>` : '';
+
     return `<div class="activity-item observer-target" data-id="${activity.id}">
       <div class="act-time"><span class="time-inner">${escapeHtml(timeDisplay(activity))}</span></div>
       <div class="act-content">
@@ -349,7 +357,7 @@
           </div>
         </div>
         ${activity.description ? `<div class="act-desc">${escapeHtml(activity.description)}</div>` : ''}
-        ${(mapHtml || notesHtml) ? `<div class="act-meta">${mapHtml}${notesHtml}</div>` : ''}
+        ${mapHtml ? `<div class="act-meta">${mapHtml}</div>` : ''}
       </div>
     </div>`;
   }
@@ -555,7 +563,6 @@
     document.getElementById('actEndTime').value = activity.endTime || '';
     document.getElementById('actDesc').value = activity.description || '';
     document.getElementById('actMapUrl').value = activity.mapUrl || '';
-    document.getElementById('actNotes').value = activity.notes || '';
     document.getElementById('modalTitle').textContent = '編輯活動';
     openModal('activityModal');
   }
@@ -569,8 +576,7 @@
       endTime: document.getElementById('actEndTime').value,
       title: title,
       description: document.getElementById('actDesc').value.trim(),
-      mapUrl: document.getElementById('actMapUrl').value.trim(),
-      notes: document.getElementById('actNotes').value.trim()
+      mapUrl: document.getElementById('actMapUrl').value.trim()
     };
     const day = appData.days[editingDayIndex];
     if (editingActivityId) {
@@ -597,7 +603,10 @@
     pendingDeleteId = null; pendingDeleteDay = null;
   }
 
-  function resetForm() { const form = document.getElementById('activityForm'); if (form) form.reset(); }
+  function resetForm() {
+    const form = document.getElementById('activityForm');
+    if (form) form.reset();
+  }
 
   function openModal(id) {
     const modal = document.getElementById(id);

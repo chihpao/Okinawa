@@ -100,6 +100,7 @@
         <!-- Activity Modal -->
         <div class="modal-overlay" id="activityModal">
             <div class="modal">
+                <div class="modal-drag-handle"></div>
                 <div class="modal-header">
                     <h2 class="modal-title" id="modalTitle">新增活動</h2>
                     <button class="icon-btn modal-close" aria-label="關閉">
@@ -130,11 +131,13 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="actDesc">備註</label>
-                            <input class="form-input" type="text" id="actDesc" placeholder="補充說明（選填）">
+                            <label class="form-label" for="actDesc">備註/說明</label>
+                            <input class="form-input" type="text" id="actDesc" placeholder="例：樂桃航空 MM930（選填）">
                         </div>
-                        <input type="hidden" id="actMapUrl" value="">
-                        <input type="hidden" id="actNotes" value="">
+                        <div class="form-group">
+                            <label class="form-label" for="actMapUrl">地標連結 (Google Maps)</label>
+                            <input class="form-input" type="url" id="actMapUrl" placeholder="https://maps.app.goo.gl/...">
+                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
