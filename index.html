@@ -23,7 +23,6 @@
 </head>
 
 <body>
-    <!-- Page Loader -->
     <div class="loader-overlay" id="pageLoader">
         <div class="loader-logo"><span>OKINAWA</span></div>
         <div class="loader-bar"></div>
@@ -31,7 +30,6 @@
     </div>
 
     <div id="app">
-        <!-- Top Bar -->
         <header class="top-bar" id="topBar">
             <div class="brand" id="brandHome">
                 <span class="brand-mark"></span>
@@ -46,7 +44,6 @@
         </header>
 
         <main class="main-content">
-            <!-- Hero -->
             <section class="hero" id="heroSection">
                 <div class="hero-image-wrap">
                     <img class="hero-image" src="assets/hero.jpg" alt="沖繩海景" loading="eager" onerror="this.style.display='none'">
@@ -69,16 +66,13 @@
                 </div>
             </section>
 
-            <!-- Day Navigation -->
             <div class="day-nav-container">
                 <div class="container day-nav-track" id="dayTabsTrack"></div>
             </div>
 
-            <!-- Day Views -->
             <div class="container schedule-container" id="scheduleContainer"></div>
         </main>
 
-        <!-- Bottom Nav -->
         <nav class="bottom-nav" id="bottomNav">
             <button class="nav-item primary" id="btnFab" title="新增活動">
                 <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round">
@@ -89,7 +83,6 @@
             </button>
         </nav>
 
-        <!-- Activity Modal -->
         <div class="modal-overlay" id="activityModal">
             <div class="modal">
                 <div class="modal-drag-handle"></div>
@@ -139,7 +132,6 @@
             </div>
         </div>
 
-        <!-- Delete Modal -->
         <div class="modal-overlay" id="deleteModal">
             <div class="modal modal-confirm">
                 <div class="confirm-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
@@ -152,10 +144,8 @@
             </div>
         </div>
 
-        <!-- Toast Container -->
         <div class="toast-container" id="toastContainer"></div>
 
-        <!-- Back to Top -->
         <button class="back-to-top" id="backToTop" title="回到頂端" aria-label="回到頂端">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="18 15 12 9 6 15"/>
@@ -163,6 +153,9 @@
         </button>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
     <script src="app.js"></script>
 </body>
 

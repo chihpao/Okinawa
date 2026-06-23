@@ -12,9 +12,6 @@
     x: '<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
   };
 
-  /* ═══════════════════════════════════════════
-     App State
-     ═══════════════════════════════════════════ */
   let appData = null;
   let activeDay = -1;
   let countdownInterval = null;
@@ -23,6 +20,45 @@
   let pendingDeleteId = null;
   let pendingDeleteDay = null;
   let lastScrollY = 0;
+
+  const Motion = {
+    lenis: null,
+    gsap: null,
+    ScrollTrigger: null,
+    init() {
+      this.gsap = window.gsap;
+      this.ScrollTrigger = window.ScrollTrigger;
+      if (this.gsap && this.ScrollTrigger) {
+        this.gsap.registerPlugin(this.ScrollTrigger);
+        this.ScrollTrigger.config({ ignoreMobileResize: true });
+      }
+      if (window.Lenis) {
+        this.lenis = new window.Lenis({
+          duration: 1.1,
+          easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+          smoothWheel: true,
+          smoothTouch: false,
+        });
+        if (this.gsap) {
+          this.gsap.ticker.add((time) => this.lenis.raf(time * 1000));
+          this.gsap.ticker.lagSmoothing(0);
+        } else {
+          const lenisRef = this.lenis;
+          requestAnimationFrame(function raf(time) {
+            lenisRef.raf(time);
+            requestAnimationFrame(raf);
+          });
+        }
+      }
+    },
+    stopLenis() { if (this.lenis) this.lenis.stop(); },
+    startLenis() { if (this.lenis) this.lenis.start(); },
+    scrollToTop() {
+      if (this.lenis) this.lenis.scrollTo(0, { immediate: true });
+      else window.scrollTo(0, 0);
+    },
+    hasGsap() { return !!(this.gsap && this.ScrollTrigger); },
+  };
 
   const STORAGE_KEYS = {
     data: 'okinawa-data-v5',
@@ -96,9 +132,6 @@
     ]
   };
 
-  /* ═══════════════════════════════════════════
-     Cloud Sync
-     ═══════════════════════════════════════════ */
   const GAS_URL = 'https://script.google.com/macros/s/AKfycbyyOxIV_zj1nLN97jCWl8uPY1ecYPDKkbHd3cUjrEH86cPhbphzFL_GzecPzGSSopu5/exec';
   const CloudSync = {
     pollInterval: null, syncTimeout: null, lastKnownHash: null, isSyncing: false, needsSync: false,
@@ -174,9 +207,6 @@
     return id;
   }
 
-  /* ═══════════════════════════════════════════
-     Helpers
-     ═══════════════════════════════════════════ */
   function sortActivities(activities) {
     return [...activities].sort((a, b) => {
       const ta = a.startTime || '99:99';
@@ -191,15 +221,8 @@
     return '';
   }
 
-  function isFlight(act) {
-    const t = (act.title + (act.description || '')).toLowerCase();
-    return t.includes('航空') || t.includes('航班') || t.includes('回程') || t.includes('flight');
-  }
-
-  /* ═══════════════════════════════════════════
-     Initialization
-     ═══════════════════════════════════════════ */
   async function initApp() {
+    Motion.init();
     showLoading();
     CloudSync.init();
     try {
@@ -257,6 +280,24 @@
     renderDayTabs();
     renderDayViews();
     switchDay(activeDay);
+    initHeroMotion();
+  }
+
+  function initHeroMotion() {
+    const heroImg = document.querySelector('.hero-image');
+    const heroWrap = document.querySelector('.hero-image-wrap');
+    if (!heroImg) return;
+
+    if (heroImg.complete) { heroImg.classList.add('loaded'); }
+    else { heroImg.addEventListener('load', () => heroImg.classList.add('loaded')); }
+
+    if (Motion.hasGsap() && heroWrap) {
+      const stOpts = { trigger: heroWrap, start: 'top top', end: 'bottom top', scrub: 1 };
+      Motion.gsap.to(heroImg, {
+        yPercent: 12, ease: 'none',
+        scrollTrigger: stOpts,
+      });
+    }
   }
 
   function renderHeroTravelers() {
@@ -290,7 +331,7 @@
       return `<div class="day-view${dayIndex === activeDay ? ' active' : ''}" data-day-index="${dayIndex}">
         <div class="day-header">
           <div class="day-header-text">
-            <h2>Day ${day.dayNumber} · ${day.label}</h2>
+            <h2><span class="day-num">Day ${day.dayNumber}</span> · ${escapeHtml(day.label)}</h2>
             ${day.subtitle ? `<p class="day-subtitle">${escapeHtml(day.subtitle)}</p>` : ''}
           </div>
           ${badges ? `<div class="day-badges">${badges}</div>` : ''}
@@ -316,22 +357,12 @@
       </button>`;
     }).join('');
     return `<div class="home-view${activeDay === -1 ? ' active' : ''}">
-      <div class="home-guide">
-        <p class="home-guide-eyebrow">行程總覽</p>
-        <h2 class="home-guide-title">挑一天看看<br>我們要去哪</h2>
-      </div>
       <div class="home-tiles">${tiles}</div>
     </div>`;
   }
 
   function renderDayBadges(day) {
     let badges = '';
-    if (day.hasRentalCar) {
-      badges += `<span class="day-badge">${SVGS.car} 租車</span>`;
-    }
-    if (day.activities && day.activities.some(isFlight)) {
-      badges += `<span class="day-badge">${SVGS.flight} 航班</span>`;
-    }
     if (appData.trip.travelers) {
       appData.trip.travelers.forEach(t => {
         if (day.date > t.departureDate.split('T')[0]) {
@@ -355,7 +386,7 @@
       ? `<a href="${escapeHtml(activity.mapUrl)}" target="_blank" rel="noopener noreferrer">${SVGS.map} 地圖連結</a>`
       : '';
 
-    return `<div class="activity-item observer-target" data-id="${activity.id}">
+    return `<div class="activity-item" data-id="${activity.id}">
       <div class="act-time"><span class="time-inner">${escapeHtml(timeDisplay(activity))}</span></div>
       <div class="act-content">
         <div class="act-header">
@@ -377,26 +408,41 @@
     activeDay = index;
     localStorage.setItem(STORAGE_KEYS.activeDay, index);
     document.querySelectorAll('.day-tab').forEach((tab, i) => tab.classList.toggle('active', i === index));
-    document.querySelectorAll('.day-view').forEach((view, i) => view.classList.toggle('active', i === index));
-    const homeView = document.querySelector('.home-view');
-    if (homeView) homeView.classList.toggle('active', index === -1);
+
     const hero = document.getElementById('heroSection');
     if (hero) {
       if (index === -1) {
+        hero.style.display = '';
         hero.style.opacity = '1';
         hero.style.pointerEvents = 'auto';
       } else {
-        hero.style.opacity = '0';
-        hero.style.pointerEvents = 'none';
+        hero.style.display = 'none';
       }
     }
+
+    const showTarget = index === -1
+      ? document.querySelector('.home-view')
+      : document.querySelector('.day-view[data-day-index="' + index + '"]');
+
+    document.querySelectorAll('.day-view, .home-view').forEach(v => v.classList.remove('active'));
+
+    if (showTarget) {
+      if (Motion.hasGsap()) {
+        Motion.gsap.fromTo(showTarget,
+          { opacity: 0, y: 12 },
+          { opacity: 1, y: 0, duration: 0.35, ease: 'power2.out',
+            onStart: () => showTarget.classList.add('active'),
+            onComplete: () => { Motion.ScrollTrigger && Motion.ScrollTrigger.refresh(); },
+          });
+      } else {
+        showTarget.classList.add('active');
+      }
+    }
+
     const activeTab = document.querySelector('.day-tab.active');
     if (activeTab) activeTab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
   }
 
-  /* ═══════════════════════════════════════════
-     Countdown
-     ═══════════════════════════════════════════ */
   function startCountdown() {
     updateCountdown();
     countdownInterval = setInterval(updateCountdown, 1000);
@@ -433,10 +479,14 @@
 
   function updateCountdownValue(el, value) {
     const str = String(value);
-    if (el.textContent !== str) {
+    if (el.textContent === str) return;
+    if (Motion.hasGsap()) {
+      Motion.gsap.fromTo(el,
+        { y: -12, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.3, ease: 'power2.out',
+          onStart: () => { el.textContent = str; } });
+    } else {
       el.textContent = str;
-      el.classList.add('tick');
-      setTimeout(() => el.classList.remove('tick'), 300);
     }
   }
 
@@ -445,21 +495,38 @@
     if (loader) setTimeout(() => loader.classList.add('hidden'), 1200);
   }
 
-  /* ═══════════════════════════════════════════
-     Scroll Reveal
-     ═══════════════════════════════════════════ */
   function initScrollReveal() {
-    const targets = document.querySelectorAll('.observer-target:not(.observed)');
-    if (!('IntersectionObserver' in window)) { targets.forEach(t => t.classList.add('reveal')); return; }
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          setTimeout(() => entry.target.classList.add('reveal'), 50);
-          observer.unobserve(entry.target);
-        }
+    const targets = document.querySelectorAll('.activity-item:not(.observed)');
+    const homeTiles = document.querySelectorAll('.home-tile:not(.observed)');
+
+    if (homeTiles.length) {
+      homeTiles.forEach(t => t.classList.add('observed'));
+      if (Motion.hasGsap()) {
+        Motion.gsap.from(homeTiles, {
+          opacity: 0, y: 20, duration: 0.6, ease: 'power2.out',
+          stagger: 0.08, overwrite: true,
+        });
+      } else {
+        homeTiles.forEach(t => t.classList.add('reveal'));
+      }
+    }
+
+    if (!targets.length) return;
+    targets.forEach(t => t.classList.add('observed'));
+
+    if (Motion.hasGsap()) {
+      Motion.gsap.set(targets, { opacity: 0, y: 20 });
+      Motion.ScrollTrigger.batch(targets, {
+        start: 'top 88%',
+        onEnter: (batch) => Motion.gsap.to(batch, {
+          opacity: 1, y: 0, duration: 0.6, ease: 'power2.out',
+          stagger: 0.06, overwrite: true,
+        }),
       });
-    }, { rootMargin: '0px 0px -80px 0px', threshold: 0.08 });
-    targets.forEach(target => { target.classList.add('observed'); observer.observe(target); });
+      Motion.ScrollTrigger.refresh();
+    } else {
+      targets.forEach(t => t.classList.add('reveal'));
+    }
   }
 
   function initBackToTop() {
@@ -468,7 +535,10 @@
     window.addEventListener('scroll', () => {
       btn.classList.toggle('visible', window.scrollY > 500);
     }, { passive: true });
-    btn.addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+    btn.addEventListener('click', () => {
+      if (Motion.lenis) Motion.lenis.scrollTo(0, { duration: 1 });
+      else window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
   }
 
   function setupScrollHide() {
@@ -515,7 +585,7 @@
 
   function setupEventListeners() {
     document.getElementById('brandHome')?.addEventListener('click', () => {
-      switchDay(-1); window.scrollTo({ top: 0, behavior: 'smooth' });
+      switchDay(-1); Motion.scrollToTop();
     });
     document.getElementById('btnFab')?.addEventListener('click', openAddModal);
     document.getElementById('dayTabsTrack')?.addEventListener('click', (e) => {
@@ -542,9 +612,6 @@
     setupScrollHide();
   }
 
-  /* ═══════════════════════════════════════════
-     Modal Functions
-     ═══════════════════════════════════════════ */
   function getSmartDefaultDay() {
     if (activeDay >= 0 && activeDay < appData.days.length) return activeDay;
     const todayStr = new Date().toISOString().split('T')[0];
@@ -633,13 +700,50 @@
   }
 
   function openModal(id) {
-    const modal = document.getElementById(id);
-    if (modal) { modal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+    const overlay = document.getElementById(id);
+    if (!overlay) return;
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    Motion.stopLenis();
+    const panel = overlay.querySelector('.modal');
+    if (panel && Motion.hasGsap()) {
+      const isConfirm = panel.classList.contains('modal-confirm');
+      if (isConfirm) {
+        Motion.gsap.fromTo(panel,
+          { opacity: 0, scale: 0.94, y: 10 },
+          { opacity: 1, scale: 1, y: 0, duration: 0.4, ease: 'power3.out' });
+      } else {
+        Motion.gsap.fromTo(panel,
+          { xPercent: 100 },
+          { xPercent: 0, duration: 0.5, ease: 'power3.out' });
+      }
+      Motion.gsap.fromTo(overlay,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.3, ease: 'power2.out' });
+    }
   }
 
   function closeAllModals() {
-    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      const panel = overlay.querySelector('.modal');
+      if (panel && Motion.hasGsap() && overlay.classList.contains('active')) {
+        const isConfirm = panel.classList.contains('modal-confirm');
+        if (isConfirm) {
+          Motion.gsap.to(panel, { opacity: 0, scale: 0.96, duration: 0.2, ease: 'power2.in' });
+        } else {
+          Motion.gsap.to(panel, { xPercent: 100, duration: 0.3, ease: 'power3.in' });
+        }
+        Motion.gsap.to(overlay, {
+          opacity: 0, duration: 0.25, ease: 'power2.in',
+          onComplete: () => { overlay.classList.remove('active'); overlay.style.opacity = ''; },
+        });
+      } else {
+        overlay.classList.remove('active');
+        overlay.style.opacity = '';
+      }
+    });
     document.body.style.overflow = '';
+    Motion.startLenis();
   }
 
   function saveData() {
