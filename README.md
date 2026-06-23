@@ -1,6 +1,6 @@
 # ☀ 8月沖繩輕旅（Okinawa Trip Planner）
 
-一個精緻的五天四夜 *家族旅行行程共筆* 網頁應用程式。
+沖繩五天四夜 *家族旅行行程共筆*
 
 🔗 **https://chihpao.github.io/Okinawa/**
 
