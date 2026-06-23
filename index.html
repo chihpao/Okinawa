@@ -8,7 +8,7 @@
     <meta name="theme-color" content="#F7F4EE">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <title>沖繩 2026 — 家族旅行企劃</title>
+    <title>沖繩 2026</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -46,20 +46,24 @@
         <main class="main-content">
             <section class="hero" id="heroSection">
                 <div class="hero-image-wrap">
-                    <img class="hero-image" src="assets/hero.jpg" alt="沖繩海景" loading="eager" onerror="this.style.display='none'">
+                    <img class="hero-image" src="assets/hero.jpg" alt="沖繩海景" loading="eager"
+                        onerror="this.style.display='none'">
                     <div class="hero-image-tint"></div>
                 </div>
                 <div class="container hero-content">
                     <p class="hero-eyebrow">2026.08.13 — 08.17 . 沖繩</p>
                     <h1 class="hero-title">Okinawa<br>Trip<span class="dot">.</span></h1>
-                    <p class="hero-subtitle">五天四夜，一家人在島上的腳步</p>
 
                     <div class="dashboard-panel">
                         <div class="countdown-group" id="countdownGroup">
-                            <div class="countdown-block"><span class="val" id="countDays">-</span><span class="lbl">天</span></div>
-                            <div class="countdown-block"><span class="val" id="countHours">-</span><span class="lbl">時</span></div>
-                            <div class="countdown-block"><span class="val" id="countMins">-</span><span class="lbl">分</span></div>
-                            <div class="countdown-block"><span class="val" id="countSecs">-</span><span class="lbl">秒</span></div>
+                            <div class="countdown-block"><span class="val" id="countDays">-</span><span
+                                    class="lbl">天</span></div>
+                            <div class="countdown-block"><span class="val" id="countHours">-</span><span
+                                    class="lbl">時</span></div>
+                            <div class="countdown-block"><span class="val" id="countMins">-</span><span
+                                    class="lbl">分</span></div>
+                            <div class="countdown-block"><span class="val" id="countSecs">-</span><span
+                                    class="lbl">秒</span></div>
                         </div>
                         <div class="travelers-list" id="heroTravelers"></div>
                     </div>
@@ -75,7 +79,8 @@
 
         <nav class="bottom-nav" id="bottomNav">
             <button class="nav-item primary" id="btnFab" title="新增活動">
-                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"
+                    stroke-linecap="round">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
@@ -89,7 +94,8 @@
                 <div class="modal-header">
                     <h2 class="modal-title" id="modalTitle">新增活動</h2>
                     <button class="icon-btn modal-close" aria-label="關閉">
-                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="1.5"
+                            fill="none" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="18" y1="6" x2="6" y2="18"></line>
                             <line x1="6" y1="6" x2="18" y2="18"></line>
                         </svg>
@@ -121,7 +127,8 @@
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="actMapUrl">地標連結 (Google Maps)</label>
-                            <input class="form-input" type="url" id="actMapUrl" placeholder="https://maps.app.goo.gl/...">
+                            <input class="form-input" type="url" id="actMapUrl"
+                                placeholder="https://maps.app.goo.gl/...">
                         </div>
                     </form>
                 </div>
@@ -134,7 +141,12 @@
 
         <div class="modal-overlay" id="deleteModal">
             <div class="modal modal-confirm">
-                <div class="confirm-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+                <div class="confirm-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none"
+                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="8" x2="12" y2="12" />
+                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg></div>
                 <h3 class="confirm-title">確定要刪除嗎？</h3>
                 <p class="confirm-desc">此操作無法復原</p>
                 <div class="confirm-actions">
@@ -147,8 +159,9 @@
         <div class="toast-container" id="toastContainer"></div>
 
         <button class="back-to-top" id="backToTop" title="回到頂端" aria-label="回到頂端">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="18 15 12 9 6 15"/>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <polyline points="18 15 12 9 6 15" />
             </svg>
         </button>
     </div>

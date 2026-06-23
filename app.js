@@ -13,7 +13,7 @@
   };
 
   let appData = null;
-  let activeDay = -1;
+  let activeDay = 0;
   let countdownInterval = null;
   let editingActivityId = null;
   let editingDayIndex = null;
@@ -239,7 +239,7 @@
       CloudSync.startPolling();
       const savedDay = localStorage.getItem(STORAGE_KEYS.activeDay);
       if (savedDay !== null) {
-        activeDay = Math.min(Math.max(-1, parseInt(savedDay, 10)), appData.days.length - 1);
+        activeDay = Math.min(Math.max(0, parseInt(savedDay, 10)), appData.days.length - 1);
       }
       window.appData = appData;
       renderAll();
@@ -324,7 +324,6 @@
   function renderDayViews() {
     const container = document.getElementById('scheduleContainer');
     if (!container) return;
-    const homeHtml = renderHomeView();
     const daysHtml = appData.days.map((day, dayIndex) => {
       const timeline = renderTimeline(day.activities, dayIndex);
       const badges = renderDayBadges(day);
@@ -339,27 +338,11 @@
         <div class="timeline">${timeline}</div>
       </div>`;
     }).join('');
-    container.innerHTML = homeHtml + daysHtml;
+    container.innerHTML = daysHtml;
     setTimeout(initScrollReveal, 100);
   }
 
-  function renderHomeView() {
-    const tiles = appData.days.map((day, i) => {
-      const date = new Date(day.date + 'T00:00:00');
-      const m = date.getMonth() + 1;
-      const d = date.getDate();
-      const count = (day.activities && day.activities.length) || 0;
-      return `<button class="home-tile" data-day="${i}">
-        <div class="home-tile-day">Day ${day.dayNumber}</div>
-        <div class="home-tile-date">${m}月${d}日 · ${day.dayOfWeek}</div>
-        <div class="home-tile-sub">${escapeHtml(day.subtitle || '')}</div>
-        <div class="home-tile-meta">${count} 項活動</div>
-      </button>`;
-    }).join('');
-    return `<div class="home-view${activeDay === -1 ? ' active' : ''}">
-      <div class="home-tiles">${tiles}</div>
-    </div>`;
-  }
+
 
   function renderDayBadges(day) {
     let badges = '';
@@ -404,14 +387,14 @@
   }
 
   function switchDay(index) {
-    if (!appData || index < -1 || index >= appData.days.length) return;
+    if (!appData || index < 0 || index >= appData.days.length) return;
     activeDay = index;
     localStorage.setItem(STORAGE_KEYS.activeDay, index);
     document.querySelectorAll('.day-tab').forEach((tab, i) => tab.classList.toggle('active', i === index));
 
     const hero = document.getElementById('heroSection');
     if (hero) {
-      if (index === -1) {
+      if (index === 0) {
         hero.style.display = '';
         hero.style.opacity = '1';
         hero.style.pointerEvents = 'auto';
@@ -420,11 +403,12 @@
       }
     }
 
-    const showTarget = index === -1
-      ? document.querySelector('.home-view')
-      : document.querySelector('.day-view[data-day-index="' + index + '"]');
+    const dayNav = document.querySelector('.day-nav-container');
+    if (dayNav) dayNav.classList.add('nav-hidden');
 
-    document.querySelectorAll('.day-view, .home-view').forEach(v => v.classList.remove('active'));
+    const showTarget = document.querySelector('.day-view[data-day-index="' + index + '"]');
+
+    document.querySelectorAll('.day-view').forEach(v => v.classList.remove('active'));
 
     if (showTarget) {
       if (Motion.hasGsap()) {
@@ -497,19 +481,6 @@
 
   function initScrollReveal() {
     const targets = document.querySelectorAll('.activity-item:not(.observed)');
-    const homeTiles = document.querySelectorAll('.home-tile:not(.observed)');
-
-    if (homeTiles.length) {
-      homeTiles.forEach(t => t.classList.add('observed'));
-      if (Motion.hasGsap()) {
-        Motion.gsap.from(homeTiles, {
-          opacity: 0, y: 20, duration: 0.6, ease: 'power2.out',
-          stagger: 0.08, overwrite: true,
-        });
-      } else {
-        homeTiles.forEach(t => t.classList.add('reveal'));
-      }
-    }
 
     if (!targets.length) return;
     targets.forEach(t => t.classList.add('observed'));
@@ -544,6 +515,7 @@
   function setupScrollHide() {
     const topBar = document.getElementById('topBar');
     const bottomNav = document.getElementById('bottomNav');
+    const dayNav = document.querySelector('.day-nav-container');
     let ticking = false;
     window.addEventListener('scroll', () => {
       if (!ticking) {
@@ -553,9 +525,11 @@
           if (scrollDelta > 10 && currentScroll > 120) {
             if (topBar) topBar.classList.add('hidden');
             if (bottomNav) bottomNav.classList.add('hidden');
+            if (dayNav) dayNav.classList.add('nav-hidden');
           } else if (scrollDelta < -5) {
             if (topBar) topBar.classList.remove('hidden');
             if (bottomNav) bottomNav.classList.remove('hidden');
+            if (dayNav) dayNav.classList.remove('nav-hidden');
           }
           lastScrollY = currentScroll;
           ticking = false;
@@ -577,15 +551,15 @@
       const endX = e.changedTouches[0].clientX; const endY = e.changedTouches[0].clientY;
       const diffX = endX - startX; const diffY = endY - startY;
       if (Math.abs(diffX) > 60 && Math.abs(diffX) > Math.abs(diffY) * 1.8) {
-        if (diffX < 0) switchDay(activeDay + 1);
-        else switchDay(activeDay - 1);
+        if (diffX < 0 && activeDay < appData.days.length - 1) switchDay(activeDay + 1);
+        else if (diffX > 0 && activeDay > 0) switchDay(activeDay - 1);
       }
     }, { passive: true });
   }
 
   function setupEventListeners() {
     document.getElementById('brandHome')?.addEventListener('click', () => {
-      switchDay(-1); Motion.scrollToTop();
+      switchDay(0); Motion.scrollToTop();
     });
     document.getElementById('btnFab')?.addEventListener('click', openAddModal);
     document.getElementById('dayTabsTrack')?.addEventListener('click', (e) => {
@@ -595,10 +569,8 @@
     document.getElementById('scheduleContainer')?.addEventListener('click', (e) => {
       const editBtn = e.target.closest('[data-action="edit"]');
       const deleteBtn = e.target.closest('[data-action="delete"]');
-      const homeTile = e.target.closest('.home-tile');
       if (editBtn) { e.stopPropagation(); openEditModal(editBtn.dataset.id, parseInt(editBtn.dataset.day, 10)); }
       else if (deleteBtn) { e.stopPropagation(); requestDelete(deleteBtn.dataset.id, parseInt(deleteBtn.dataset.day, 10)); }
-      else if (homeTile) { switchDay(parseInt(homeTile.dataset.day, 10)); }
     });
     document.querySelectorAll('.modal-close, .modal-cancel').forEach(btn => btn.addEventListener('click', closeAllModals));
     document.querySelectorAll('.modal-overlay').forEach(overlay => {
@@ -706,6 +678,7 @@
     document.body.style.overflow = 'hidden';
     Motion.stopLenis();
     const panel = overlay.querySelector('.modal');
+    if (panel) panel.scrollTop = 0;
     if (panel && Motion.hasGsap()) {
       const isConfirm = panel.classList.contains('modal-confirm');
       if (isConfirm) {
@@ -767,8 +740,8 @@
 
   document.addEventListener('keydown', (e) => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); switchDay(activeDay + 1); }
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); switchDay(activeDay - 1); }
+    if ((e.key === 'ArrowRight' || e.key === 'ArrowDown') && activeDay < appData?.days?.length - 1) { e.preventDefault(); switchDay(activeDay + 1); }
+    if ((e.key === 'ArrowLeft' || e.key === 'ArrowUp') && activeDay > 0) { e.preventDefault(); switchDay(activeDay - 1); }
   });
 
   document.addEventListener('DOMContentLoaded', initApp);
