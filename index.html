@@ -1,14 +1,13 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-theme="light">
+<html lang="zh-TW">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
     <meta name="description" content="沖繩家族旅行 2026 — 五天四夜完整行程規劃">
-    <meta name="theme-color" content="#F7F5F0" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#0A1628" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#F7F4EE">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>沖繩 2026 — 家族旅行企劃</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,7 +17,7 @@
         rel="stylesheet">
 
     <link rel="icon"
-        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2242%22 fill=%22none%22 stroke=%22%23E8544C%22 stroke-width=%228%22/><path d=%22M20,55 Q35,35 50,55 T80,55%22 fill=%22none%22 stroke=%22%230A1628%22 stroke-width=%227%22 stroke-linecap=%22round%22/></svg>">
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2242%22 fill=%22none%22 stroke=%22%23D94A3D%22 stroke-width=%228%22/><path d=%22M20,55 Q35,35 50,55 T80,55%22 fill=%22none%22 stroke=%22%231F6F73%22 stroke-width=%227%22 stroke-linecap=%22round%22/></svg>">
 
     <link rel="stylesheet" href="index.css">
 </head>
@@ -48,32 +47,25 @@
 
         <main class="main-content">
             <!-- Hero -->
-            <section class="container hero" id="heroSection">
-                <div class="wave-bg" aria-hidden="true">
-                    <svg class="wave-svg" viewBox="0 0 1440 120" preserveAspectRatio="none" fill="currentColor" style="color:rgba(59,125,216,.06)">
-                        <path d="M0,60 C240,120 480,0 720,60 C960,120 1200,0 1440,60 L1440,120 L0,120 Z"/>
-                    </svg>
-                    <svg class="wave-svg" viewBox="0 0 1440 120" preserveAspectRatio="none" fill="currentColor" style="color:rgba(232,84,76,.04)">
-                        <path d="M0,80 C360,0 720,120 1080,40 C1260,0 1380,80 1440,60 L1440,120 L0,120 Z"/>
-                    </svg>
-                    <svg class="wave-svg" viewBox="0 0 1440 120" preserveAspectRatio="none" fill="currentColor" style="color:rgba(46,155,142,.03)">
-                        <path d="M0,40 C180,100 540,20 900,70 C1080,100 1260,40 1440,80 L1440,120 L0,120 Z"/>
-                    </svg>
+            <section class="hero" id="heroSection">
+                <div class="hero-image-wrap">
+                    <img class="hero-image" src="assets/hero.jpg" alt="沖繩海景" loading="eager" onerror="this.style.display='none'">
+                    <div class="hero-image-tint"></div>
                 </div>
-                <div class="particles" id="heroParticles" aria-hidden="true"></div>
+                <div class="container hero-content">
+                    <p class="hero-eyebrow">2026.08.13 — 08.17 . 沖繩</p>
+                    <h1 class="hero-title">Okinawa<br>Trip<span class="dot">.</span></h1>
+                    <p class="hero-subtitle">五天四夜，一家人在島上的腳步</p>
 
-                <p class="hero-eyebrow">2026.08.13 — 08.17 . 沖繩</p>
-                <h1 class="hero-title">Okinawa<br>Trip<span class="dot">.</span></h1>
-                <p class="hero-subtitle">8 月 · 沖繩 · 五天四夜</p>
-
-                <div class="dashboard-panel">
-                    <div class="countdown-group" id="countdownGroup">
-                        <div class="countdown-block"><span class="val" id="countDays">-</span><span class="lbl">天</span></div>
-                        <div class="countdown-block"><span class="val" id="countHours">-</span><span class="lbl">時</span></div>
-                        <div class="countdown-block"><span class="val" id="countMins">-</span><span class="lbl">分</span></div>
-                        <div class="countdown-block"><span class="val" id="countSecs">-</span><span class="lbl">秒</span></div>
+                    <div class="dashboard-panel">
+                        <div class="countdown-group" id="countdownGroup">
+                            <div class="countdown-block"><span class="val" id="countDays">-</span><span class="lbl">天</span></div>
+                            <div class="countdown-block"><span class="val" id="countHours">-</span><span class="lbl">時</span></div>
+                            <div class="countdown-block"><span class="val" id="countMins">-</span><span class="lbl">分</span></div>
+                            <div class="countdown-block"><span class="val" id="countSecs">-</span><span class="lbl">秒</span></div>
+                        </div>
+                        <div class="travelers-list" id="heroTravelers"></div>
                     </div>
-                    <div class="travelers-list" id="heroTravelers"></div>
                 </div>
             </section>
 
@@ -170,10 +162,6 @@
             </svg>
         </button>
     </div>
-
-    <!-- Custom Cursor -->
-    <div class="custom-cursor" id="customCursor"></div>
-    <div class="custom-cursor-follower" id="customCursorFollower"></div>
 
     <script src="app.js"></script>
 </body>

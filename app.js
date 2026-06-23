@@ -175,33 +175,6 @@
   }
 
   /* ═══════════════════════════════════════════
-     Dark Mode
-     ═══════════════════════════════════════════ */
-
-
-  /* ═══════════════════════════════════════════
-     Hero Particles
-     ═══════════════════════════════════════════ */
-  function initParticles() {
-    const container = document.getElementById('heroParticles');
-    if (!container) return;
-    const count = window.innerWidth < 600 ? 8 : 18;
-    for (let i = 0; i < count; i++) {
-      const particle = document.createElement('div');
-      particle.className = 'particle';
-      const size = Math.random() * 6 + 2;
-      particle.style.cssText = `
-        width:${size}px;height:${size}px;
-        left:${Math.random() * 100}%;
-        bottom:${Math.random() * 60}%;
-        animation-delay:${Math.random() * 6}s;
-        animation-duration:${Math.random() * 5 + 4}s;
-      `;
-      container.appendChild(particle);
-    }
-  }
-
-  /* ═══════════════════════════════════════════
      Helpers
      ═══════════════════════════════════════════ */
   function sortActivities(activities) {
@@ -249,9 +222,6 @@
       renderAll();
       setupEventListeners();
       startCountdown();
-      initParticles();
-      initCustomCursor();
-      initMagneticButtons();
       initBackToTop();
       removePageLoader();
     } catch (err) {
@@ -261,8 +231,20 @@
   }
 
   function showLoading() {
-    const main = document.getElementById('scheduleContainer');
-    if (main) main.innerHTML = `<div class="loading"><div class="spinner"></div><div>載入行程中...</div></div>`;
+    const container = document.getElementById('scheduleContainer');
+    if (!container) return;
+    let html = '<div class="skeleton-list">';
+    for (let i = 0; i < 4; i++) {
+      html += `<div class="skeleton-item">
+        <div class="skeleton-block skeleton-time"></div>
+        <div style="display:flex;flex-direction:column;gap:.5rem;flex:1">
+          <div class="skeleton-block skeleton-title"></div>
+          <div class="skeleton-block skeleton-desc"></div>
+        </div>
+      </div>`;
+    }
+    html += '</div>';
+    container.innerHTML = html;
   }
 
   function showError(msg) {
@@ -301,18 +283,45 @@
   function renderDayViews() {
     const container = document.getElementById('scheduleContainer');
     if (!container) return;
-    container.innerHTML = appData.days.map((day, dayIndex) => {
+    const homeHtml = renderHomeView();
+    const daysHtml = appData.days.map((day, dayIndex) => {
       const timeline = renderTimeline(day.activities, dayIndex);
       const badges = renderDayBadges(day);
       return `<div class="day-view${dayIndex === activeDay ? ' active' : ''}" data-day-index="${dayIndex}">
         <div class="day-header">
-          <h2>Day ${day.dayNumber}</h2>
+          <div class="day-header-text">
+            <h2>Day ${day.dayNumber} · ${day.label}</h2>
+            ${day.subtitle ? `<p class="day-subtitle">${escapeHtml(day.subtitle)}</p>` : ''}
+          </div>
           ${badges ? `<div class="day-badges">${badges}</div>` : ''}
         </div>
         <div class="timeline">${timeline}</div>
       </div>`;
     }).join('');
+    container.innerHTML = homeHtml + daysHtml;
     setTimeout(initScrollReveal, 100);
+  }
+
+  function renderHomeView() {
+    const tiles = appData.days.map((day, i) => {
+      const date = new Date(day.date + 'T00:00:00');
+      const m = date.getMonth() + 1;
+      const d = date.getDate();
+      const count = (day.activities && day.activities.length) || 0;
+      return `<button class="home-tile" data-day="${i}">
+        <div class="home-tile-day">Day ${day.dayNumber}</div>
+        <div class="home-tile-date">${m}月${d}日 · ${day.dayOfWeek}</div>
+        <div class="home-tile-sub">${escapeHtml(day.subtitle || '')}</div>
+        <div class="home-tile-meta">${count} 項活動</div>
+      </button>`;
+    }).join('');
+    return `<div class="home-view${activeDay === -1 ? ' active' : ''}">
+      <div class="home-guide">
+        <p class="home-guide-eyebrow">行程總覽</p>
+        <h2 class="home-guide-title">挑一天看看<br>我們要去哪</h2>
+      </div>
+      <div class="home-tiles">${tiles}</div>
+    </div>`;
   }
 
   function renderDayBadges(day) {
@@ -335,7 +344,7 @@
 
   function renderTimeline(activities, dayIndex) {
     if (!activities || activities.length === 0) {
-      return '<div class="timeline-empty">尚無活動計畫</div>';
+      return '<div class="timeline-empty"><div class="empty-title">這天還沒安排活動</div><div class="empty-sub">點右下角 + 開始記下計畫</div></div>';
     }
     const sorted = sortActivities(activities);
     return sorted.map(act => renderActivityCard(act, dayIndex)).join('');
@@ -343,20 +352,21 @@
 
   function renderActivityCard(activity, dayIndex) {
     const mapHtml = activity.mapUrl
-      ? `<a href="${escapeHtml(activity.mapUrl)}" target="_blank" rel="noopener noreferrer">地標地圖</a>`
+      ? `<a href="${escapeHtml(activity.mapUrl)}" target="_blank" rel="noopener noreferrer">${SVGS.map} 地圖連結</a>`
       : '';
 
     return `<div class="activity-item observer-target" data-id="${activity.id}">
       <div class="act-time"><span class="time-inner">${escapeHtml(timeDisplay(activity))}</span></div>
       <div class="act-content">
         <div class="act-header">
-          <div class="act-title magnetic-text">${escapeHtml(activity.title)}</div>
+          <div class="act-title">${escapeHtml(activity.title)}</div>
           <div class="act-actions">
-            <button class="act-btn magnetic-btn" data-action="edit" data-id="${activity.id}" data-day="${dayIndex}" title="編輯">${SVGS.edit}</button>
+            <button class="act-btn" data-action="edit" data-id="${activity.id}" data-day="${dayIndex}" title="編輯">${SVGS.edit}</button>
             <button class="act-btn btn-delete" data-action="delete" data-id="${activity.id}" data-day="${dayIndex}" title="刪除">${SVGS.trash}</button>
           </div>
         </div>
         ${activity.description ? `<div class="act-desc">${escapeHtml(activity.description)}</div>` : ''}
+        ${activity.notes ? `<div class="act-notes">${escapeHtml(activity.notes)}</div>` : ''}
         ${mapHtml ? `<div class="act-meta">${mapHtml}</div>` : ''}
       </div>
     </div>`;
@@ -368,8 +378,18 @@
     localStorage.setItem(STORAGE_KEYS.activeDay, index);
     document.querySelectorAll('.day-tab').forEach((tab, i) => tab.classList.toggle('active', i === index));
     document.querySelectorAll('.day-view').forEach((view, i) => view.classList.toggle('active', i === index));
+    const homeView = document.querySelector('.home-view');
+    if (homeView) homeView.classList.toggle('active', index === -1);
     const hero = document.getElementById('heroSection');
-    if (hero) hero.style.display = index === -1 ? 'flex' : 'none';
+    if (hero) {
+      if (index === -1) {
+        hero.style.opacity = '1';
+        hero.style.pointerEvents = 'auto';
+      } else {
+        hero.style.opacity = '0';
+        hero.style.pointerEvents = 'none';
+      }
+    }
     const activeTab = document.querySelector('.day-tab.active');
     if (activeTab) activeTab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
   }
@@ -505,8 +525,10 @@
     document.getElementById('scheduleContainer')?.addEventListener('click', (e) => {
       const editBtn = e.target.closest('[data-action="edit"]');
       const deleteBtn = e.target.closest('[data-action="delete"]');
+      const homeTile = e.target.closest('.home-tile');
       if (editBtn) { e.stopPropagation(); openEditModal(editBtn.dataset.id, parseInt(editBtn.dataset.day, 10)); }
       else if (deleteBtn) { e.stopPropagation(); requestDelete(deleteBtn.dataset.id, parseInt(deleteBtn.dataset.day, 10)); }
+      else if (homeTile) { switchDay(parseInt(homeTile.dataset.day, 10)); }
     });
     document.querySelectorAll('.modal-close, .modal-cancel').forEach(btn => btn.addEventListener('click', closeAllModals));
     document.querySelectorAll('.modal-overlay').forEach(overlay => {
@@ -535,7 +557,7 @@
     if (!container) return;
     container.innerHTML = appData.days.map((day, i) => {
       const date = new Date(day.date + 'T00:00:00');
-      return `<button type="button" class="day-chip${i === selectedIndex ? ' active' : ''}" data-day-idx="${i}">${date.getMonth() + 1}/${date.getDate()}</button>`;
+      return `<button type="button" class="day-chip${i === selectedIndex ? ' active' : ''}" data-day-idx="${i}">Day ${day.dayNumber} · ${date.getMonth() + 1}/${date.getDate()} (${day.dayOfWeek})</button>`;
     }).join('');
     container.querySelectorAll('.day-chip').forEach(chip => {
       chip.addEventListener('click', () => {
@@ -571,14 +593,16 @@
     const titleInput = document.getElementById('actTitle');
     const title = titleInput.value.trim();
     if (!title) { titleInput.focus(); showToast('請填寫活動名稱'); return; }
+    const day = appData.days[editingDayIndex];
+    const existing = editingActivityId ? day.activities.find(a => a.id === editingActivityId) : null;
     const activityData = {
       startTime: document.getElementById('actStartTime').value,
       endTime: document.getElementById('actEndTime').value,
       title: title,
       description: document.getElementById('actDesc').value.trim(),
-      mapUrl: document.getElementById('actMapUrl').value.trim()
+      mapUrl: document.getElementById('actMapUrl').value.trim(),
+      notes: existing ? (existing.notes || '') : ''
     };
-    const day = appData.days[editingDayIndex];
     if (editingActivityId) {
       const idx = day.activities.findIndex(a => a.id === editingActivityId);
       if (idx !== -1) { activityData.id = editingActivityId; day.activities[idx] = activityData; }
@@ -587,7 +611,7 @@
       day.activities.push(activityData);
     }
     saveData(); closeAllModals();
-    renderDayViews(); switchDay(activeDay); initMagneticButtons();
+    renderDayViews(); switchDay(activeDay);
     showToast('已儲存');
   }
 
@@ -598,7 +622,7 @@
     const day = appData.days[pendingDeleteDay];
     day.activities = day.activities.filter(a => a.id !== pendingDeleteId);
     saveData(); closeAllModals();
-    renderDayViews(); switchDay(activeDay); initMagneticButtons();
+    renderDayViews(); switchDay(activeDay);
     showToast('已刪除');
     pendingDeleteId = null; pendingDeleteDay = null;
   }
@@ -635,62 +659,6 @@
   function escapeHtml(unsafe) {
     if (!unsafe) return '';
     return unsafe.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-  }
-
-  /* ═══════════════════════════════════════════
-     Custom Cursor
-     ═══════════════════════════════════════════ */
-  let cursorX = 0, cursorY = 0, followerX = 0, followerY = 0;
-
-  function initCustomCursor() {
-    const cursor = document.getElementById('customCursor');
-    const follower = document.getElementById('customCursorFollower');
-    if (!cursor || !follower) return;
-    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
-      cursor.style.display = 'none'; follower.style.display = 'none'; return;
-    }
-    document.addEventListener('mousemove', (e) => {
-      cursorX = e.clientX; cursorY = e.clientY;
-      cursor.style.transform = `translate3d(${cursorX}px, ${cursorY}px, 0)`;
-    });
-    function renderFollower() {
-      followerX += (cursorX - followerX) * 0.13;
-      followerY += (cursorY - followerY) * 0.13;
-      follower.style.transform = `translate3d(${followerX}px, ${followerY}px, 0)`;
-      requestAnimationFrame(renderFollower);
-    }
-    requestAnimationFrame(renderFollower);
-    setupCursorHoverEffects(cursor, follower);
-  }
-
-  function setupCursorHoverEffects(cursor, follower) {
-    const attachHover = () => {
-      document.querySelectorAll('a, button, .day-tab, .day-chip, .magnetic-text, .brand').forEach(el => {
-        if (el.dataset.cursorAttached) return;
-        el.dataset.cursorAttached = 'true';
-        el.addEventListener('mouseenter', () => { cursor.classList.add('hover'); follower.classList.add('hover'); });
-        el.addEventListener('mouseleave', () => { cursor.classList.remove('hover'); follower.classList.remove('hover'); });
-      });
-    };
-    attachHover();
-    const observer = new MutationObserver(() => { attachHover(); });
-    observer.observe(document.body, { childList: true, subtree: true });
-  }
-
-  function initMagneticButtons() {
-    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) return;
-    document.querySelectorAll('.magnetic-btn, .nav-item, .modal-close').forEach(btn => {
-      if (btn.dataset.magneticAttached) return;
-      btn.dataset.magneticAttached = 'true';
-      btn.addEventListener('mousemove', (e) => {
-        const rect = btn.getBoundingClientRect();
-        const h = rect.width / 2;
-        const x = e.clientX - rect.left - h;
-        const y = e.clientY - rect.top - h;
-        btn.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
-      });
-      btn.addEventListener('mouseleave', () => { btn.style.transform = 'translate(0px, 0px)'; });
-    });
   }
 
   document.addEventListener('keydown', (e) => {
