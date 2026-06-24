@@ -14,11 +14,24 @@ export function useCountdown(tripRef) {
   
   let countdownInterval = null
 
+  function parseDate(dateStr, timeStr) {
+    if (!dateStr) return new Date()
+    const dateParts = dateStr.split(/[-/]/)
+    const timeParts = timeStr.split(':')
+    const year = parseInt(dateParts[0], 10)
+    const month = parseInt(dateParts[1], 10) - 1
+    const day = parseInt(dateParts[2], 10)
+    const hour = parseInt(timeParts[0], 10)
+    const minute = parseInt(timeParts[1], 10)
+    const second = parseInt(timeParts[2], 10)
+    return new Date(year, month, day, hour, minute, second)
+  }
+
   function updateCountdown() {
     if (!tripRef.value || !tripRef.value.startDate || !tripRef.value.endDate) return
 
-    const startDate = new Date(tripRef.value.startDate + 'T00:00:00')
-    const endDate = new Date(tripRef.value.endDate + 'T23:59:59')
+    const startDate = parseDate(tripRef.value.startDate, '00:00:00')
+    const endDate = parseDate(tripRef.value.endDate, '23:59:59')
     const now = new Date()
 
     if (now >= startDate && now <= endDate) {
@@ -58,7 +71,7 @@ export function useCountdown(tripRef) {
     }
   })
 
-  watch(tripRef, () => {
+  watch(() => tripRef.value, () => {
     updateCountdown()
   }, { deep: true })
 
