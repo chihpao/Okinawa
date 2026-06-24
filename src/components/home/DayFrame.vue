@@ -37,10 +37,6 @@ const formattedDate = computed(() => {
   const dlabel = props.day.dayOfWeek ? `(${props.day.dayOfWeek})` : ''
   return `${m}月${d}日 ${dlabel}`
 })
-
-const activityCount = computed(() => {
-  return props.day.activities ? props.day.activities.length : 0
-})
 </script>
 
 <style scoped>

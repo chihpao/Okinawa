@@ -35,14 +35,10 @@ function getChipLabel(dateStr) {
 
 <style scoped>
 .day-chips {
-  display: flex; gap: 8px; overflow-x: auto;
-  padding-bottom: 8px; margin-bottom: 1rem;
-  scrollbar-width: none;
+  display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1rem;
 }
-.day-chips::-webkit-scrollbar { display: none; }
 .day-chip {
-  flex-shrink: 0; padding: 6px 12px;
-  border-radius: var(--radius-full); font-size: 13px;
+  padding: 6px 12px; border-radius: var(--radius-full); font-size: 13px;
   background: var(--bg-deep); color: var(--text-secondary);
   border: 1px solid transparent; transition: all .2s;
 }

@@ -42,7 +42,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useUiStore } from '@/stores/ui'
 import { useTripStore } from '@/stores/trip'
 import { useMotion } from '@/composables/useMotion'
@@ -86,6 +86,14 @@ onMounted(async () => {
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
+})
+
+watch([isActivityModalVisible, isDeleteModalVisible], ([modal1, modal2]) => {
+  if (modal1 || modal2) {
+    motion.stopLenis()
+  } else {
+    motion.startLenis()
+  }
 })
 
 let ticking = false

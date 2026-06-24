@@ -1,3 +1,4 @@
+import { toRef } from 'vue'
 import { defineStore } from 'pinia'
 import { useCloudSync } from '../composables/useCloudSync'
 
@@ -125,7 +126,7 @@ export const useTripStore = defineStore('trip', {
   actions: {
     async loadData(onUpdate) {
       try {
-        await this.cloudSync.syncFromCloud({ value: this.appData, update: (val) => this.appData = val }, true, onUpdate)
+        await this.cloudSync.syncFromCloud(toRef(this, 'appData'), true, onUpdate)
         if (!this.appData) {
           const saved = localStorage.getItem(STORAGE_KEYS.data)
           if (saved) {
@@ -139,7 +140,7 @@ export const useTripStore = defineStore('trip', {
           }
           await this.cloudSync.syncToCloud(this.appData)
         }
-        this.cloudSync.startPolling({ value: this.appData, update: (val) => this.appData = val }, onUpdate)
+        this.cloudSync.startPolling(toRef(this, 'appData'), onUpdate)
       } catch (err) {
         console.error('Init error:', err)
         throw err
@@ -179,8 +180,8 @@ export const useTripStore = defineStore('trip', {
         activityData.id = 'd' + (this.editingDayIndex + 1) + '-' + Date.now()
         targetDay.activities.push(activityData)
       }
-      this.sortActivities(targetDay.activities)
-      if (originalDay !== targetDay) this.sortActivities(originalDay.activities)
+      sortActivities(targetDay.activities)
+      if (originalDay !== targetDay) sortActivities(originalDay.activities)
       this.saveData()
     },
     requestDelete(id, dayIndex) {

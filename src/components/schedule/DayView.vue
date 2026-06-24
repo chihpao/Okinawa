@@ -73,7 +73,7 @@ const badges = computed(() => {
 <style scoped>
 .day-view {
   display: none; opacity: 0;
-  padding: 0 max(1.5rem, calc((100vw - var(--content-w)) / 2));
+  padding: calc(var(--top-bar-h) + var(--safe-top) + 1.25rem) max(1.5rem, calc((100vw - var(--content-w)) / 2)) 2rem;
 }
 .day-view.active {
   display: block; opacity: 1;

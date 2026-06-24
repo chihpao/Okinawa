@@ -808,21 +808,14 @@ a{color:inherit;text-decoration:none;-webkit-tap-highlight-color:transparent}
   display:none;
 }
 @media(max-width:600px){
-  .modal-overlay{align-items:flex-end;justify-content:center}
+  .modal-overlay{align-items:flex-start;justify-content:center;overflow-y:auto;}
   .modal{
-    max-width:100%;height:90vh;
-    border-radius:var(--radius-xl) var(--radius-xl) 0 0;
-    padding-top:1.5rem;
+    max-width:100%;height:auto;min-height:100dvh;
+    border-radius:0;
+    padding-top:env(safe-area-inset-top, 1rem);
   }
-  .modal-drag-handle{
-    display:block;
-    width:40px;
-    height:5px;
-    background:var(--border);
-    border-radius:var(--radius-full);
-    margin:0 auto 1.5rem;
-    opacity:0.5;
-  }
+  .modal-body { overflow-y: visible; }
+  .modal-drag-handle{ display:none; }
 }
 
 .modal-header{

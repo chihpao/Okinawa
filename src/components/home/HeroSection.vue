@@ -1,8 +1,16 @@
 <template>
   <section class="hero" :class="{ 'hero-ended': countdown.state === 'after' }" id="heroSection" v-show="uiStore.viewMode === 'home'">
-    <div class="hero-image-wrap">
+    <div ref="heroWrap" class="hero-image-wrap">
       <div class="hero-image-tint"></div>
-      <img src="/assets/hero.jpg" alt="Okinawa" class="hero-image" id="heroImg" />
+      <img 
+        ref="heroImg" 
+        src="/assets/hero.jpg" 
+        alt="Okinawa" 
+        class="hero-image" 
+        :class="{ loaded: isImgLoaded }"
+        @load="isImgLoaded = true"
+        id="heroImg" 
+      />
     </div>
 
     <div class="hero-content">
@@ -52,7 +60,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useUiStore } from '@/stores/ui'
 import { useTripStore } from '@/stores/trip'
 import { useCountdown } from '@/composables/useCountdown'
@@ -62,27 +70,28 @@ const uiStore = useUiStore()
 const tripStore = useTripStore()
 const motion = useMotion()
 
+const heroImg = ref(null)
+const heroWrap = ref(null)
+const isImgLoaded = ref(false)
+
 const tripRef = computed(() => tripStore.trip)
 const countdown = useCountdown(tripRef)
 
 onMounted(() => {
+  if (heroImg.value && heroImg.value.complete) {
+    isImgLoaded.value = true
+  }
   initHeroMotion()
 })
 
 function initHeroMotion() {
-  const heroImg = document.getElementById('heroImg')
-  const heroWrap = document.querySelector('.hero-image-wrap')
-  if (!heroImg) return
+  const imgEl = heroImg.value
+  const wrapEl = heroWrap.value
+  if (!imgEl) return
 
-  if (heroImg.complete) {
-    heroImg.classList.add('loaded')
-  } else {
-    heroImg.addEventListener('load', () => heroImg.classList.add('loaded'))
-  }
-
-  if (motion.hasGsap() && heroWrap) {
-    const stOpts = { trigger: heroWrap, start: 'top top', end: 'bottom top', scrub: 1 }
-    motion.gsap.value.to(heroImg, {
+  if (motion.hasGsap() && wrapEl) {
+    const stOpts = { trigger: wrapEl, start: 'top top', end: 'bottom top', scrub: 1 }
+    motion.gsap.value.to(imgEl, {
       yPercent: 12, ease: 'none',
       scrollTrigger: stOpts,
     })

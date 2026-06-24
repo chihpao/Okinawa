@@ -1,4 +1,4 @@
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 
 export function useCountdown(tripRef) {
   const state = ref('before') 
@@ -57,6 +57,10 @@ export function useCountdown(tripRef) {
       clearInterval(countdownInterval)
     }
   })
+
+  watch(tripRef, () => {
+    updateCountdown()
+  }, { deep: true })
 
   return {
     state,
