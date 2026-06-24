@@ -1,5 +1,5 @@
 <template>
-  <section class="hero" :class="{ 'hero-ended': countdown.state === 'after' }" id="heroSection" v-show="uiStore.viewMode === 'home'">
+  <section class="hero" :class="{ 'hero-ended': state === 'after' }" id="heroSection" v-show="uiStore.viewMode === 'home'">
     <div ref="heroWrap" class="hero-image-wrap">
       <div class="hero-image-tint"></div>
       <img 
@@ -19,33 +19,33 @@
 
       <div class="dashboard-panel">
         <div class="countdown-group" id="countdownGroup">
-          <div class="countdown-before" v-if="countdown.state === 'before'">
+          <div class="countdown-before" v-if="state === 'before'">
             <div class="countdown-item">
-              <span class="countdown-num">{{ countdown.days }}</span>
+              <span class="countdown-num">{{ days }}</span>
               <span class="countdown-unit">天</span>
             </div>
             <div class="countdown-item">
-              <span class="countdown-num">{{ countdown.hours }}</span>
+              <span class="countdown-num">{{ hours }}</span>
               <span class="countdown-unit">時</span>
             </div>
             <div class="countdown-item">
-              <span class="countdown-num">{{ countdown.minutes }}</span>
+              <span class="countdown-num">{{ minutes }}</span>
               <span class="countdown-unit">分</span>
             </div>
             <div class="countdown-item">
-              <span class="countdown-num">{{ countdown.seconds }}</span>
+              <span class="countdown-num">{{ seconds }}</span>
               <span class="countdown-unit">秒後出發</span>
             </div>
           </div>
-          <div class="countdown-during" v-else-if="countdown.state === 'during'">
-            <span class="countdown-text">旅行第 </span><span class="countdown-num">{{ countdown.currentDay }}</span>
-            <span class="countdown-text"> 天 · 還有 </span><span class="countdown-num">{{ countdown.remaining }}</span>
+          <div class="countdown-during" v-else-if="state === 'during'">
+            <span class="countdown-text">旅行第 </span><span class="countdown-num">{{ currentDay }}</span>
+            <span class="countdown-text"> 天 · 還有 </span><span class="countdown-num">{{ remaining }}</span>
             <span class="countdown-text"> 天</span>
           </div>
           <div class="countdown-after" v-else>
-            <span class="countdown-text">結束了 </span><span class="countdown-num">{{ countdown.daysSince }}</span>
+            <span class="countdown-text">結束了 </span><span class="countdown-num">{{ daysSince }}</span>
             <span class="countdown-text"> 天</span>
-            <span class="countdown-memoir">{{ countdown.memoirText }}</span>
+            <span class="countdown-memoir">{{ memoirText }}</span>
           </div>
         </div>
 
@@ -75,7 +75,18 @@ const heroWrap = ref(null)
 const isImgLoaded = ref(false)
 
 const tripRef = computed(() => tripStore.trip)
-const countdown = useCountdown(tripRef)
+const {
+  state,
+  days,
+  hours,
+  minutes,
+  seconds,
+  currentDay,
+  totalDays,
+  remaining,
+  daysSince,
+  memoirText
+} = useCountdown(tripRef)
 
 onMounted(() => {
   if (heroImg.value && heroImg.value.complete) {
