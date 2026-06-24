@@ -709,9 +709,14 @@ a{color:inherit;text-decoration:none;-webkit-tap-highlight-color:transparent}
     transition:opacity .25s var(--ease-out),transform .25s var(--ease-out);
     background:var(--bg-raised);
     border-radius:var(--radius-sm);
-    padding:4px;
+    padding:6px 8px;
+    gap:.5rem;
     box-shadow:var(--shadow-md);
-    z-index:5;
+    z-index:10;
+  }
+  .act-actions .act-btn{
+    width:44px;height:44px;
+    min-width:44px;min-height:44px;
   }
   .activity-item.actions-visible .act-actions{
     opacity:1;pointer-events:auto;
@@ -1008,31 +1013,38 @@ input[type="time"].form-input{-webkit-appearance:auto;appearance:auto}
   .top-day-tab{padding:.38rem .7rem;font-size:.82rem}
 }
 
-/* Mobile filmstrip: wider frames with snap scroll, active raised */
+/* Mobile filmstrip: all 5 frames visible at once, compact layout */
 @media(max-width:600px){
+  .day-nav-track{
+    scroll-snap-type:none;
+    overflow-x:visible;
+    padding:0 6px;
+    gap:3px;
+  }
   .day-frame{
-    width:30vw;aspect-ratio:2/1;
+    /* 5 frames: (100vw - 12px padding - 12px gaps) / 5 */
+    width:calc((100vw - 24px) / 5);
+    min-width:0;
+    aspect-ratio:auto;
     min-height:auto;
-    padding:.5rem;
-    scroll-snap-align:start;
-    transition:opacity .2s var(--ease-out),padding-top .3s var(--ease-out);
+    padding:6px 4px;
+    scroll-snap-align:none;
+    flex-shrink:0;
+    transition:opacity .2s var(--ease-out),transform .2s var(--ease-out);
   }
   .day-frame.active{
-    padding-top:calc(.5rem + 4px);
+    padding-top:6px;
+    transform:translateY(-2px);
   }
-  .day-nav-track{
-    scroll-snap-type:x mandatory;
-    padding:0 2rem;
-  }
-  
-  /* Scale down inner elements for the tiny filmstrip frame */
-  .day-frame .frame-num { font-size: 1.5rem; }
-  .day-frame .frame-top { margin-bottom: 0; gap: .25rem; align-items: baseline; }
-  .day-frame .frame-rec { width: 4px; height: 4px; }
-  .day-frame .frame-date { font-size: 0.65rem; margin-top:0; margin-left: auto; }
+
+  /* Scale down inner elements for the compact filmstrip frame */
+  .day-frame .frame-num { font-size: 1.1rem; }
+  .day-frame .frame-top { margin-bottom: 0; gap: .15rem; align-items: baseline; }
+  .day-frame .frame-rec { width: 3px; height: 3px; }
+  .day-frame .frame-date { font-size: 0.55rem; margin-top: 2px; margin-left: 0; line-height: 1.2; }
   .day-frame .frame-sub { display: none; }
   .day-frame .frame-bottom { display: none; }
-  .day-frame::after { bottom: .25rem; right: .25rem; font-size: .6rem; }
+  .day-frame::after { display: none; }
 
   /* Ensure mobile body has space for the full-width FAB bar */
   body{

@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+
+:root {
+  --bg-base:     #F7F4EE;
+  --bg-raised:   #FCFAF6;
+  --bg-deep:     #EDE7DC;
+  --bg-overlay:  rgba(247, 244, 238, 0.92);
+  --bg-ink:      #1C1C1A;
+
+  --text-primary:   #1C1C1A;
+  --text-secondary: #5C5A55;
+  --text-tertiary:  #9A978F;
+  --text-inverse:   #F7F4EE;
+
+  --border:        #E2DDD3;
+  --border-light: #EDE7DC;
+  --border-strong: #D4CDC0;
+
+  --accent:       #D94A3D;
+  --accent-deep:  #B83A2E;
+  --accent-soft:  rgba(217, 74, 61, 0.08);
+  --accent-glow:  rgba(217, 74, 61, 0.18);
+
+  --shadow-sm:  0 1px 3px rgba(28,28,26,0.04);
+  --shadow-md:  0 4px 20px rgba(28,28,26,0.06);
+  --shadow-lg:  0 12px 40px rgba(28,28,26,0.08);
+  --shadow-xl:  0 20px 60px rgba(28,28,26,0.12);
+
+  --font-display: 'Playfair Display', 'Noto Sans TC', serif;
+  --font-body:    'Outfit', 'Noto Sans TC', sans-serif;
+
+  --film-bar:     #1C1C1A;
+  --film-hole:    rgba(255,255,255,0.14);
+  --frame-w:      clamp(150px, 18vw, 240px);
+  --frame-gap:    3px;
+
+  --fs-display: clamp(3rem, 10vw, 7rem);
+  --fs-heading: clamp(1.75rem, 4vw, 3rem);
+  --fs-subhead: clamp(1.125rem, 2vw, 1.4rem);
+  --fs-body:    1rem;
+  --fs-caption: 0.875rem;
+  --fs-micro:   0.75rem;
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --top-bar-h: 64px;
+  --bottom-nav-h: 64px;
+
+  --content-w: 920px;
+
+  --ease-out:     cubic-bezier(0, 0, 0.2, 1);
+  --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+  --ease-out-back: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+
+  --radius-sm: 8px;
+  --radius-xl: 28px;
+  --radius-full: 9999px;
+
+  /* Activity type colors */
+  --type-sight-bg: #F5F0E8;
+  --type-sight-bar: #B8956A;
+  --type-food-bg: #F9F3EE;
+  --type-food-bar: #C4654A;
+  --type-transit-bg: #F0F0F0;
+  --type-transit-bar: #9E9E9E;
+  --type-hotel-bg: #EEF2F5;
+  --type-hotel-bar: #5C7A8A;
+  --type-shop-bg: #F3F0F8;
+  --type-shop-bar: #8B6CB0;
+  --type-other-bg: var(--bg-raised);
+  --type-other-bar: var(--border-strong);
+}

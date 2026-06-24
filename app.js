@@ -929,6 +929,8 @@
   function setupDismissActions() {
     document.addEventListener('click', (e) => {
       if (window.innerWidth > 600) return;
+      // Don't dismiss if tapping on an action button itself
+      if (e.target.closest('[data-action]') || e.target.closest('.act-btn')) return;
       const item = e.target.closest('.activity-item');
       if (!item || !item.classList.contains('actions-visible')) {
         document.querySelectorAll('.activity-item.actions-visible').forEach(el => {
