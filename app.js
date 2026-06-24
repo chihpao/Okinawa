@@ -14,6 +14,7 @@
 
   let appData = null;
   let activeDay = 0;
+  let viewMode = 'home';
   let countdownInterval = null;
   let editingActivityId = null;
   let editingDayIndex = null;
@@ -272,14 +273,15 @@
 
   function showError(msg) {
     const main = document.getElementById('scheduleContainer');
-    if (main) main.innerHTML = `<div class="empty-state"><p>${msg}</p></div>`;
+    if (main) main.innerHTML = `<div class="empty-state"><div class="empty-state-msg">${msg}</div><div class="empty-state-hint">重新整理頁面試試，或等一下再回來</div></div>`;
   }
 
   function renderAll() {
     renderHeroTravelers();
     renderDayTabs();
     renderDayViews();
-    switchDay(activeDay);
+    if (viewMode === 'day') switchDay(activeDay);
+    else applyHomeView();
     initHeroMotion();
   }
 
@@ -314,10 +316,30 @@
     track.innerHTML = appData.days.map((day, i) => {
       const date = new Date(day.date + 'T00:00:00');
       const m = (date.getMonth() + 1) + '月'; const d = date.getDate();
-      return `<div class="day-tab${i === activeDay ? ' active' : ''}" data-day="${i}">
-        <span class="tab-date">DAY ${day.dayNumber}</span>
-        <span class="tab-title">${m}${d}日</span>
+      const dlabel = day.dayOfWeek ? '(' + day.dayOfWeek + ')' : '';
+      const count = day.activities ? day.activities.length : 0;
+      return `<div class="day-frame${i === activeDay ? ' active' : ''}" data-day="${i}">
+        <div class="frame-top">
+          <span class="frame-rec"></span>
+        </div>
+        <span class="frame-num">${day.dayNumber}</span>
+        <span class="frame-date">${m}${d}日 ${dlabel}</span>
+        ${day.subtitle ? `<span class="frame-sub">${escapeHtml(day.subtitle)}</span>` : ''}
+        <div class="frame-bottom">
+          <span>${count} 項行程</span>
+        </div>
       </div>`;
+    }).join('');
+    renderTopDayNav();
+  }
+
+  function renderTopDayNav() {
+    const track = document.getElementById('topDayTrack');
+    if (!track) return;
+    track.innerHTML = appData.days.map((day, i) => {
+      const date = new Date(day.date + 'T00:00:00');
+      const label = (date.getMonth() + 1) + '/' + date.getDate();
+      return `<button type="button" class="top-day-tab${i === activeDay ? ' active' : ''}" data-day="${i}">${label}</button>`;
     }).join('');
   }
 
@@ -358,73 +380,168 @@
 
   function renderTimeline(activities, dayIndex) {
     if (!activities || activities.length === 0) {
-      return '<div class="timeline-empty"><div class="empty-title">這天還沒安排活動</div><div class="empty-sub">點右下角 + 開始記下計畫</div></div>';
+      return '<div class="timeline-empty"><div class="empty-title">這天還沒有安排，也許是最好的一天。</div></div>';
     }
     const sorted = sortActivities(activities);
     return sorted.map(act => renderActivityCard(act, dayIndex)).join('');
   }
 
+  const ACT_KEYWORDS = {
+      transit: ['抵達', '機場', '回程', '航空', '前往', '出發'],
+      food: ['居酒屋', '晚餐', '宵夜', '市場', '餐廳', '吃'],
+      shop: ['PARCO', 'AEON', '唐吉訶德', '商場', '購物', 'iias', 'Mall'],
+      sight: ['水族館', '海灘', '神社', '寺', '城', '岬', '島', '美國村', '通', '宮'],
+      hotel: ['飯店', '民宿', '旅館', '住宿', 'hotel', 'Hotel', 'Hostel', 'チェックイン']
+    };
+    function getActivityType(title) {
+      if (!title) return 'other';
+      for (const [type, keywords] of Object.entries(ACT_KEYWORDS)) {
+        if (keywords.some(kw => title.includes(kw))) return type;
+      }
+      return 'other';
+    }
+
   function renderActivityCard(activity, dayIndex) {
     const mapHtml = activity.mapUrl
       ? `<a href="${escapeHtml(activity.mapUrl)}" target="_blank" rel="noopener noreferrer">${SVGS.map} 地圖連結</a>`
       : '';
+    const actType = getActivityType(activity.title);
 
-    return `<div class="activity-item" data-id="${activity.id}">
+    // Notes: journal style with collapse if > 60 chars
+    let notesHtml = '';
+    if (activity.notes) {
+      const noteText = escapeHtml(activity.notes);
+      const isLong = activity.notes.length > 60;
+      if (isLong) {
+        notesHtml = `<div class="act-notes-wrap collapsed"><div class="act-notes">${noteText}</div><button class="notes-expand" type="button">⋯ 展開</button></div>`;
+      } else {
+        notesHtml = `<div class="act-notes">${noteText}</div>`;
+      }
+    }
+
+    return `<div class="activity-item act-${actType}" data-id="${activity.id}">
       <div class="act-time"><span class="time-inner">${escapeHtml(timeDisplay(activity))}</span></div>
       <div class="act-content">
         <div class="act-header">
-          <div class="act-title">${escapeHtml(activity.title)}</div>
+          <div class="act-title">
+            ${escapeHtml(activity.title)}
+          </div>
           <div class="act-actions">
             <button class="act-btn" data-action="edit" data-id="${activity.id}" data-day="${dayIndex}" title="編輯">${SVGS.edit}</button>
             <button class="act-btn btn-delete" data-action="delete" data-id="${activity.id}" data-day="${dayIndex}" title="刪除">${SVGS.trash}</button>
           </div>
         </div>
         ${activity.description ? `<div class="act-desc">${escapeHtml(activity.description)}</div>` : ''}
-        ${activity.notes ? `<div class="act-notes">${escapeHtml(activity.notes)}</div>` : ''}
+        ${notesHtml}
         ${mapHtml ? `<div class="act-meta">${mapHtml}</div>` : ''}
       </div>
     </div>`;
   }
 
-  function switchDay(index) {
-    if (!appData || index < 0 || index >= appData.days.length) return;
-    activeDay = index;
-    localStorage.setItem(STORAGE_KEYS.activeDay, index);
-    document.querySelectorAll('.day-tab').forEach((tab, i) => tab.classList.toggle('active', i === index));
-
+  function applyHomeView() {
+    document.getElementById('app')?.classList.remove('day-mode');
     const hero = document.getElementById('heroSection');
     if (hero) {
-      if (index === 0) {
-        hero.style.display = '';
-        hero.style.opacity = '1';
-        hero.style.pointerEvents = 'auto';
-      } else {
-        hero.style.display = 'none';
-      }
+      hero.style.display = '';
+      hero.style.opacity = '1';
+      hero.style.pointerEvents = 'auto';
     }
+    const dayNav = document.querySelector('.day-nav-container');
+    if (dayNav) dayNav.classList.remove('nav-hidden');
+    document.querySelectorAll('.day-frame').forEach(f => f.classList.remove('active'));
+    document.querySelectorAll('.day-view').forEach(v => v.classList.remove('active'));
+  }
+
+  function goHome() {
+    viewMode = 'home';
+    activeDay = 0;
+    localStorage.setItem(STORAGE_KEYS.activeDay, 0);
+    applyHomeView();
+    Motion.scrollToTop();
+  }
+
+  function switchDay(index) {
+    if (!appData || index < 0 || index >= appData.days.length) return;
+    viewMode = 'day';
+    const prevDay = activeDay;
+    activeDay = index;
+    localStorage.setItem(STORAGE_KEYS.activeDay, index);
+    document.getElementById('app')?.classList.add('day-mode');
+    document.querySelectorAll('.day-frame').forEach((tab, i) => tab.classList.toggle('active', i === index));
+    document.querySelectorAll('.top-day-tab').forEach((tab, i) => tab.classList.toggle('active', i === index));
+
+    const hero = document.getElementById('heroSection');
+    if (hero) hero.style.display = 'none';
 
     const dayNav = document.querySelector('.day-nav-container');
     if (dayNav) dayNav.classList.add('nav-hidden');
 
     const showTarget = document.querySelector('.day-view[data-day-index="' + index + '"]');
+    const prevTarget = prevDay !== index ? document.querySelector('.day-view[data-day-index="' + prevDay + '"]') : null;
 
-    document.querySelectorAll('.day-view').forEach(v => v.classList.remove('active'));
-
-    if (showTarget) {
-      if (Motion.hasGsap()) {
-        Motion.gsap.fromTo(showTarget,
-          { opacity: 0, y: 12 },
-          { opacity: 1, y: 0, duration: 0.35, ease: 'power2.out',
-            onStart: () => showTarget.classList.add('active'),
-            onComplete: () => { Motion.ScrollTrigger && Motion.ScrollTrigger.refresh(); },
-          });
-      } else {
-        showTarget.classList.add('active');
-      }
+    // Exit animation for previous day
+    if (prevTarget && prevTarget.classList.contains('active')) {
+      prevTarget.classList.remove('active');
+      prevTarget.classList.add('day-exit');
+      prevTarget.addEventListener('animationend', function handler() {
+        prevTarget.classList.remove('day-exit');
+        prevTarget.removeEventListener('animationend', handler);
+      }, { once: true });
+    } else {
+      document.querySelectorAll('.day-view').forEach(v => v.classList.remove('active'));
     }
 
-    const activeTab = document.querySelector('.day-tab.active');
+    // Enter animation for new day
+    if (showTarget) {
+      // Reset activity items for re-reveal
+      showTarget.querySelectorAll('.activity-item').forEach(item => {
+        item.classList.remove('revealed');
+        item.classList.remove('observed');
+      });
+
+      showTarget.classList.remove('day-exit');
+      showTarget.classList.add('day-enter');
+      showTarget.classList.add('active');
+      showTarget.addEventListener('animationend', function handler() {
+        showTarget.classList.remove('day-enter');
+        showTarget.removeEventListener('animationend', handler);
+        if (Motion.ScrollTrigger) Motion.ScrollTrigger.refresh();
+      }, { once: true });
+    }
+
+    const activeTab = document.querySelector('.top-day-tab.active');
     if (activeTab) activeTab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    Motion.scrollToTop();
+    // Staggered reveal after a brief delay for day-enter to kick in
+    setTimeout(() => revealActivities(showTarget), 150);
+  }
+
+  let revealObserver = null;
+  function revealActivities(container) {
+    if (!container) return;
+    const items = container.querySelectorAll('.activity-item:not(.revealed)');
+    if (!items.length) return;
+    if (revealObserver) revealObserver.disconnect();
+
+    // Staggered reveal: each card enters 60ms after the previous
+    let revealIndex = 0;
+    revealObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          const item = entry.target;
+          const delay = revealIndex * 60;
+          item.style.transitionDelay = delay + 'ms';
+          requestAnimationFrame(() => {
+            item.classList.add('revealed');
+            // Clean up transition-delay after animation
+            setTimeout(() => { item.style.transitionDelay = ''; }, 400 + delay);
+          });
+          revealIndex++;
+          revealObserver.unobserve(item);
+        }
+      });
+    }, { rootMargin: '0px 0px -60px 0px', threshold: 0.06 });
+    items.forEach(function (item) { revealObserver.observe(item); });
   }
 
   function startCountdown() {
@@ -437,28 +554,47 @@
     const endDate = new Date(appData.trip.endDate + 'T23:59:59');
     const now = new Date();
     const group = document.getElementById('countdownGroup');
+    const hero = document.getElementById('heroSection');
     if (!group) return;
+
+    // State 2: Trip is ongoing — cherish mode
     if (now >= startDate && now <= endDate) {
       const currentDay = Math.floor((now - startDate) / (1000 * 60 * 60 * 24)) + 1;
-      group.innerHTML = `<div class="countdown-status">旅程進行中 — 第 ${currentDay} 天</div>`;
+      const totalDays = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+      const remaining = totalDays - currentDay;
+      const html = `<div class="countdown-during">
+        <span class="countdown-text">旅行第 </span><span class="countdown-num">${currentDay}</span>
+        <span class="countdown-text"> 天 · 還有 </span><span class="countdown-num">${remaining}</span>
+        <span class="countdown-text"> 天</span>
+      </div>`;
+      if (group.innerHTML !== html) group.innerHTML = html;
+      if (hero) hero.classList.remove('hero-ended');
       return;
     }
+
+    // State 3: Trip is over — closed album
     if (now > endDate) {
-      group.innerHTML = '<div class="countdown-status">旅程已結束</div>';
+      const daysSince = Math.floor((now - endDate) / (1000 * 60 * 60 * 24));
+      const html = `<div class="countdown-after">
+        <span class="countdown-text">結束了 </span><span class="countdown-num">${daysSince}</span>
+        <span class="countdown-text"> 天</span>
+        <span class="countdown-memoir">那段時光還在這裡。</span>
+      </div>`;
+      if (group.innerHTML !== html) group.innerHTML = html;
+      if (hero) hero.classList.add('hero-ended');
       clearInterval(countdownInterval); countdownInterval = null;
       return;
     }
+
+    // State 1: Trip hasn't started — anticipation mode
     const diff = startDate - now;
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const secs = Math.floor((diff % (1000 * 60)) / 1000);
-    const ds = document.getElementById('countDays'); const hs = document.getElementById('countHours');
-    const ms = document.getElementById('countMins'); const ss = document.getElementById('countSecs');
-    if (ds) updateCountdownValue(ds, days);
-    if (hs) updateCountdownValue(hs, String(hours).padStart(2, '0'));
-    if (ms) updateCountdownValue(ms, String(mins).padStart(2, '0'));
-    if (ss) updateCountdownValue(ss, String(secs).padStart(2, '0'));
+    if (hero) hero.classList.remove('hero-ended');
+    const html = `<div class="countdown-before">
+      <span class="countdown-num">${days}</span>
+      <span class="countdown-unit">天後出發</span>
+    </div>`;
+    if (group.innerHTML !== html) group.innerHTML = html;
   }
 
   function updateCountdownValue(el, value) {
@@ -486,11 +622,11 @@
     targets.forEach(t => t.classList.add('observed'));
 
     if (Motion.hasGsap()) {
-      Motion.gsap.set(targets, { opacity: 0, y: 20 });
+      Motion.gsap.set(targets, { opacity: 0, y: 24 });
       Motion.ScrollTrigger.batch(targets, {
         start: 'top 88%',
         onEnter: (batch) => Motion.gsap.to(batch, {
-          opacity: 1, y: 0, duration: 0.6, ease: 'power2.out',
+          opacity: 1, y: 0, duration: 0.4, ease: 'power2.out',
           stagger: 0.06, overwrite: true,
         }),
       });
@@ -522,14 +658,15 @@
         requestAnimationFrame(() => {
           const currentScroll = window.scrollY;
           const scrollDelta = currentScroll - lastScrollY;
+          const hideOnScroll = viewMode === 'day';
           if (scrollDelta > 10 && currentScroll > 120) {
             if (topBar) topBar.classList.add('hidden');
             if (bottomNav) bottomNav.classList.add('hidden');
-            if (dayNav) dayNav.classList.add('nav-hidden');
+            if (hideOnScroll && dayNav) dayNav.classList.add('nav-hidden');
           } else if (scrollDelta < -5) {
             if (topBar) topBar.classList.remove('hidden');
             if (bottomNav) bottomNav.classList.remove('hidden');
-            if (dayNav) dayNav.classList.remove('nav-hidden');
+            if (hideOnScroll && dayNav) dayNav.classList.remove('nav-hidden');
           }
           lastScrollY = currentScroll;
           ticking = false;
@@ -559,18 +696,33 @@
 
   function setupEventListeners() {
     document.getElementById('brandHome')?.addEventListener('click', () => {
-      switchDay(0); Motion.scrollToTop();
+      goHome();
     });
     document.getElementById('btnFab')?.addEventListener('click', openAddModal);
     document.getElementById('dayTabsTrack')?.addEventListener('click', (e) => {
-      const tab = e.target.closest('.day-tab');
+      const frame = e.target.closest('.day-frame');
+      if (frame) switchDay(parseInt(frame.dataset.day, 10));
+    });
+    document.getElementById('topDayTrack')?.addEventListener('click', (e) => {
+      const tab = e.target.closest('.top-day-tab');
       if (tab) switchDay(parseInt(tab.dataset.day, 10));
     });
     document.getElementById('scheduleContainer')?.addEventListener('click', (e) => {
       const editBtn = e.target.closest('[data-action="edit"]');
       const deleteBtn = e.target.closest('[data-action="delete"]');
+      const expandBtn = e.target.closest('.notes-expand');
       if (editBtn) { e.stopPropagation(); openEditModal(editBtn.dataset.id, parseInt(editBtn.dataset.day, 10)); }
       else if (deleteBtn) { e.stopPropagation(); requestDelete(deleteBtn.dataset.id, parseInt(deleteBtn.dataset.day, 10)); }
+      else if (expandBtn) {
+        // Toggle notes expand/collapse
+        e.stopPropagation();
+        const wrap = expandBtn.closest('.act-notes-wrap');
+        if (wrap) {
+          wrap.classList.remove('collapsed');
+          wrap.classList.add('expanded');
+          expandBtn.style.display = 'none';
+        }
+      }
     });
     document.querySelectorAll('.modal-close, .modal-cancel').forEach(btn => btn.addEventListener('click', closeAllModals));
     document.querySelectorAll('.modal-overlay').forEach(overlay => {
@@ -582,6 +734,8 @@
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAllModals(); });
     setupSwipeGestures();
     setupScrollHide();
+    setupMobileLongPress();
+    setupDismissActions();
   }
 
   function getSmartDefaultDay() {
@@ -736,6 +890,52 @@
   function escapeHtml(unsafe) {
     if (!unsafe) return '';
     return unsafe.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+  }
+
+  // Mobile long-press to reveal edit/delete actions (500ms hold)
+  function setupMobileLongPress() {
+    const isMobile = () => window.innerWidth <= 600;
+    const container = document.getElementById('scheduleContainer');
+    if (!container) return;
+
+    let pressTimer = null;
+    let pressTarget = null;
+
+    container.addEventListener('touchstart', (e) => {
+      if (!isMobile()) return;
+      const item = e.target.closest('.activity-item');
+      if (!item) return;
+      pressTarget = item;
+      pressTimer = setTimeout(() => {
+        // Dismiss any previously open actions
+        document.querySelectorAll('.activity-item.actions-visible').forEach(el => {
+          if (el !== item) el.classList.remove('actions-visible');
+        });
+        item.classList.add('actions-visible');
+        pressTimer = null;
+      }, 500);
+    }, { passive: true });
+
+    container.addEventListener('touchmove', () => {
+      if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+    }, { passive: true });
+
+    container.addEventListener('touchend', () => {
+      if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+    }, { passive: true });
+  }
+
+  // Dismiss action buttons when tapping outside on mobile
+  function setupDismissActions() {
+    document.addEventListener('click', (e) => {
+      if (window.innerWidth > 600) return;
+      const item = e.target.closest('.activity-item');
+      if (!item || !item.classList.contains('actions-visible')) {
+        document.querySelectorAll('.activity-item.actions-visible').forEach(el => {
+          el.classList.remove('actions-visible');
+        });
+      }
+    });
   }
 
   document.addEventListener('keydown', (e) => {

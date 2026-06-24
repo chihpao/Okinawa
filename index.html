@@ -19,7 +19,7 @@
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2242%22 fill=%22none%22 stroke=%22%23D94A3D%22 stroke-width=%228%22/><path d=%22M20,55 Q35,35 50,55 T80,55%22 fill=%22none%22 stroke=%22%231F6F73%22 stroke-width=%227%22 stroke-linecap=%22round%22/></svg>">
 
-    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="index.css?v=2">
 </head>
 
 <body>
@@ -29,11 +29,21 @@
         <div class="loader-tagline">OKINAWA · 2026</div>
     </div>
 
+    <noscript>
+        <div style="position:fixed;inset:0;background:#F7F4EE;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;z-index:99999;padding:2rem;text-align:center;">
+            <h1 style="font-family:serif;font-style:italic;font-size:2.5rem;color:#1C1C1A;">Okinawa<span style="color:#D94A3D">.</span></h1>
+            <p style="color:#5C5A55;font-size:1rem;line-height:1.7;max-width:360px;">這份旅行計畫需要 JavaScript 才能瀏覽。請啟用 JavaScript 後重新整理頁面。</p>
+        </div>
+    </noscript>
+
     <div id="app">
         <header class="top-bar" id="topBar">
             <div class="brand" id="brandHome">
                 <span class="brand-mark"></span>
                 <span class="brand-text">OKINAWA 2026</span>
+            </div>
+            <div class="top-day-nav" id="topDayNav">
+                <div class="top-day-track" id="topDayTrack"></div>
             </div>
             <div class="top-actions">
                 <div class="sync-indicator" id="syncIndicator" data-state="saved" title="已同步">
@@ -56,14 +66,7 @@
 
                     <div class="dashboard-panel">
                         <div class="countdown-group" id="countdownGroup">
-                            <div class="countdown-block"><span class="val" id="countDays">-</span><span
-                                    class="lbl">天</span></div>
-                            <div class="countdown-block"><span class="val" id="countHours">-</span><span
-                                    class="lbl">時</span></div>
-                            <div class="countdown-block"><span class="val" id="countMins">-</span><span
-                                    class="lbl">分</span></div>
-                            <div class="countdown-block"><span class="val" id="countSecs">-</span><span
-                                    class="lbl">秒</span></div>
+                            <!-- JS will populate with countdown-before / countdown-during / countdown-after -->
                         </div>
                         <div class="travelers-list" id="heroTravelers"></div>
                     </div>
@@ -71,7 +74,9 @@
             </section>
 
             <div class="day-nav-container">
-                <div class="container day-nav-track" id="dayTabsTrack"></div>
+                <div class="day-perf-top"></div>
+                <div class="day-nav-track" id="dayTabsTrack"></div>
+                <div class="day-perf-bot"></div>
             </div>
 
             <div class="container schedule-container" id="scheduleContainer"></div>
@@ -84,7 +89,7 @@
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
-                <span>新增</span>
+                <span>新增活動</span>
             </button>
         </nav>
 
