@@ -71,9 +71,13 @@ export function useCountdown(tripRef) {
     }
   })
 
-  watch(() => tripRef.value, () => {
-    updateCountdown()
-  }, { deep: true })
+  watch(
+    () => [tripRef.value?.startDate, tripRef.value?.endDate],
+    () => {
+      updateCountdown()
+    },
+    { immediate: true }
+  )
 
   return {
     state,
