@@ -4,28 +4,29 @@
     <TopBar @go-home="uiStore.goHome()" />
 
     <main id="scheduleContainer">
-      <HeroSection />
-      
-      <FilmStrip v-if="tripStore.days.length" />
+      <Transition name="page">
+        <HeroSection v-if="uiStore.viewMode === 'home'" />
+        <div v-else class="day-stack" :key="`day-${uiStore.activeDay}`">
+          <DayView
+            v-if="activeDayData"
+            :key="uiStore.activeDay"
+            :day="activeDayData"
+            :day-index="uiStore.activeDay"
+            :is-active="true"
+            @edit="openEditModal"
+            @delete="openDeleteModal"
+          />
+        </div>
+      </Transition>
 
-      <div v-if="uiStore.viewMode === 'day'">
-        <DayView 
-          v-for="(day, index) in tripStore.days" 
-          :key="index"
-          :day="day"
-          :day-index="index"
-          :is-active="uiStore.activeDay === index"
-          @edit="openEditModal"
-          @delete="openDeleteModal"
-        />
-      </div>
+      <FilmStrip v-if="tripStore.days.length" />
     </main>
 
     <BottomNav @add="openAddModal" />
     <BackToTop />
     <ToastContainer />
 
-    <ActivityModal 
+    <ActivityModal
       :visible="isActivityModalVisible"
       :edit-id="editingActivityId"
       :edit-day-index="editingDayIndex"
@@ -33,7 +34,7 @@
       @save="onSaveActivity"
     />
 
-    <DeleteModal 
+    <DeleteModal
       :visible="isDeleteModalVisible"
       @close="closeDeleteModal"
       @confirm="onConfirmDelete"
@@ -42,7 +43,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useUiStore } from '@/stores/ui'
 import { useTripStore } from '@/stores/trip'
 import { useMotion } from '@/composables/useMotion'
@@ -69,10 +70,12 @@ const isDeleteModalVisible = ref(false)
 const editingActivityId = ref(null)
 const editingDayIndex = ref(0)
 
+const activeDayData = computed(() => tripStore.days[uiStore.activeDay] || null)
+
 onMounted(async () => {
   uiStore.init()
   motion.init()
-  
+
   try {
     await tripStore.loadData(() => {
       showToast('行程已從雲端更新')
@@ -104,9 +107,9 @@ function handleScroll() {
     requestAnimationFrame(() => {
       const currentY = window.scrollY
       const delta = currentY - lastY
-      
+
       if (uiStore.viewMode === 'day') {
-        if (delta > 10 && currentY > 120) {
+        if (delta > 10 && currentY > 140) {
           uiStore.isNavHidden = true
         } else if (delta < -5) {
           uiStore.isNavHidden = false
@@ -114,7 +117,7 @@ function handleScroll() {
       } else {
         uiStore.isNavHidden = false
       }
-      
+
       uiStore.lastScrollY = currentY
       lastY = currentY
       ticking = false
@@ -143,10 +146,10 @@ function onSaveActivity({ dayIndex, originalDayIndex, activityId, formData }) {
   tripStore.editingDayIndex = dayIndex
   tripStore.editingActivityId = activityId
   tripStore.saveActivity(formData, originalDayIndex)
-  
+
   isActivityModalVisible.value = false
   showToast('已儲存')
-  
+
   setTimeout(() => {
     if (motion.ScrollTrigger.value) motion.ScrollTrigger.value.refresh()
   }, 100)
@@ -166,7 +169,7 @@ function onConfirmDelete() {
   tripStore.confirmDelete()
   isDeleteModalVisible.value = false
   showToast('已刪除')
-  
+
   setTimeout(() => {
     if (motion.ScrollTrigger.value) motion.ScrollTrigger.value.refresh()
   }, 100)
@@ -176,5 +179,16 @@ function onConfirmDelete() {
 <style>
 #scheduleContainer {
   min-height: 100vh;
+  position: relative;
 }
+
+.day-stack { width: 100%; }
+
+.page-enter-active,
+.page-leave-active {
+  transition: opacity .5s var(--ease-out-quart), transform .5s var(--ease-out-quart);
+}
+.page-enter-from { opacity: 0; transform: translateY(16px); }
+.page-leave-to { opacity: 0; transform: translateY(-12px); }
+.page-leave-active { position: absolute; left: 0; right: 0; }
 </style>

@@ -1,17 +1,12 @@
+/* === 原有 keyframes === */
 @keyframes revealUp { to { transform: translateY(0); } }
-@keyframes loaderSlide { 0% { transform: translateX(-100%); } 100% { transform: translateX(400%); } }
-@keyframes loaderPulse { 0%, 100% { opacity: .25; } 50% { opacity: .75; } }
+@keyframes loaderSlide { 0% { transform: translateX(-100%); } 100% { transform: translateX(360%); } }
+@keyframes loaderPulse { 0%, 100% { opacity: .25; } 50% { opacity: .85; } }
 @keyframes pulse { 50% { opacity: .45; } }
-@keyframes fadeUp { from { opacity: 0; transform: translateY(32px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes blurReveal { from { filter: blur(8px); opacity: 0; transform: scale(0.95); } to { filter: blur(0); opacity: 1; transform: scale(1); } }
-@keyframes dayExit {
-  from { opacity: 1; transform: translateY(0); }
-  to { opacity: 0; transform: translateY(-16px); }
-}
-@keyframes dayEnter {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+@keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes blurReveal { from { filter: blur(8px); opacity: 0; transform: scale(0.96); } to { filter: blur(0); opacity: 1; transform: scale(1); } }
+@keyframes dayExit { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-14px); } }
+@keyframes dayEnter { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes cardShake {
   0% { transform: translateX(0); }
   25% { transform: translateX(-4px); }
@@ -19,6 +14,93 @@
   75% { transform: translateX(-2px); }
   100% { transform: translateX(0); }
 }
-@keyframes toastIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes toastOut { to { opacity: 0; transform: translateY(-14px); } }
+@keyframes toastIn { from { opacity: 0; transform: translateY(-18px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes toastOut { to { opacity: 0; transform: translateY(-12px) scale(0.98); } }
 @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* === 新增 keyframes（大改用） === */
+/* 數字翻牌：舊字向上、新字從下淡入 */
+@keyframes flipUp { to { transform: translateY(-100%); } }
+@keyframes flipIn { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+/* 緩升的呼吸 ken-burns（極慢） */
+@keyframes kenBreathe {
+  0%   { transform: scale(1) translate3d(0,0,0); }
+  50%  { transform: scale(1.035) translate3d(-1%, 1%, 0); }
+  100% { transform: scale(1) translate3d(0,0,0); }
+}
+
+/* 條記 / pulse dot */
+@keyframes softPing {
+  0%   { transform: scale(1); opacity: 0.6; }
+  70%  { transform: scale(1.8); opacity: 0; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+/* footer chevron 提示 */
+@keyframes nudgeY {
+  0%, 100% { transform: translateY(0); opacity: 0.55; }
+  50% { transform: translateY(6px); opacity: 1; }
+}
+
+/* ripple */
+@keyframes rippleGo {
+  to { transform: scale(2.6); opacity: 0; }
+}
+
+/* 文字逐字微 stagger（letter fade-up） */
+@keyframes letterFly {
+  from { opacity: 0; transform: translateY(0.5em); filter: blur(4px); }
+  to   { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+/* bottom sheet 彈回 */
+@keyframes sheetUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+/* 同步 dot spinner 環 */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* active tab 滑動指示器 fallback（CSS 無法追 JS 位置時保留呼吸） */
+@keyframes glowSoft {
+  0%, 100% { box-shadow: 0 0 0 0 var(--accent-glow); }
+  50% { box-shadow: 0 0 0 6px transparent; }
+}
+
+/* 卡片入場 stagger util */
+.stagger-in {
+  animation: fadeUp 0.62s var(--ease-out-expo) both;
+}
+
+/* 一個微弱的紙紋背景 (使用 SVG-inline noise，輕量化) */
+.paper-grain {
+  position: relative;
+}
+.paper-grain::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.1 0 0 0 0 0.08 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.35;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 行動端 hover reset */
+@media (hover: none) {
+  .no-touch-hover { transition: none !important; }
+}
+
+/* 減動偏好 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

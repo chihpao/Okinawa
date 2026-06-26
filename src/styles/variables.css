@@ -1,72 +1,126 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
 
 :root {
-  --bg-base:     #F7F4EE;
-  --bg-raised:   #FCFAF6;
-  --bg-deep:     #EDE7DC;
-  --bg-overlay:  rgba(247, 244, 238, 0.92);
-  --bg-ink:      #1C1C1A;
+  /* === 色階系統 === */
+  /* 中性米紙基底（從暖偏冷的層次，避免單調單色） */
+  --paper-1:       #F6F1E8;
+  --paper-2:       #FBF8F2;
+  --paper-3:       #EFE8DC;
+  --paper-deep:    #E3DBC9;
 
-  --text-primary:   #1C1C1A;
-  --text-secondary: #5C5A55;
-  --text-tertiary:  #9A978F;
-  --text-inverse:   #F7F4EE;
+  --bg-base:       var(--paper-1);
+  --bg-raised:     var(--paper-2);
+  --bg-deep:       var(--paper-3);
+  --bg-overlay:    rgba(246, 241, 232, 0.86);
+  --bg-overlay-strong: rgba(246, 241, 232, 0.96);
+  --bg-ink:        #1A1916;
 
-  --border:        #E2DDD3;
-  --border-light: #EDE7DC;
-  --border-strong: #D4CDC0;
+  /* 文字 */
+  --text-primary:    #1A1916;
+  --text-secondary:  #4E4B45;
+  --text-tertiary:   #97928A;
+  --text-inverse:    #F6F1E8;
+  --text-muted:      #BCB7AC;
 
-  --accent:       #D94A3D;
-  --accent-deep:  #B83A2E;
-  --accent-soft:  rgba(217, 74, 61, 0.08);
-  --accent-glow:  rgba(217, 74, 61, 0.18);
+  /* 邊線 */
+  --border:         #DDD6C7;
+  --border-light:   #ECE5D8;
+  --border-strong:  #CDC4B2;
+  --border-ink:     rgba(26,25,22,0.18);
 
-  --shadow-sm:  0 1px 3px rgba(28,28,26,0.04);
-  --shadow-md:  0 4px 20px rgba(28,28,26,0.06);
-  --shadow-lg:  0 12px 40px rgba(28,28,26,0.08);
-  --shadow-xl:  0 20px 60px rgba(28,28,26,0.12);
+  /* 主調朱紅（保留品牌色 + 補強階梯） */
+  --accent:        #C0452F;
+  --accent-deep:   #983723;
+  --accent-soft:   rgba(192, 69, 47, 0.08);
+  --accent-glow:   rgba(192, 69, 47, 0.20);
+  --accent-tint:   #F3E2DC;
 
+  /* 沖繩二級輔色（節制使用） */
+  --sea:           #2F6E6A;
+  --sea-soft:      rgba(47, 110, 106, 0.10);
+
+  /* 陰影系統（紙感、非塑膠感） */
+  --shadow-xs: 0 1px 2px rgba(26,25,22,0.04), 0 1px 1px rgba(26,25,22,0.03);
+  --shadow-sm: 0 2px 6px rgba(26,25,22,0.05), 0 1px 2px rgba(26,25,22,0.04);
+  --shadow-md: 0 4px 18px rgba(26,25,22,0.07), 0 2px 6px rgba(26,25,22,0.04);
+  --shadow-lg: 0 14px 38px rgba(26,25,22,0.10), 0 4px 12px rgba(26,25,22,0.05);
+  --shadow-xl: 0 28px 64px rgba(26,25,22,0.14), 0 6px 18px rgba(26,25,22,0.06);
+  --shadow-inset: inset 0 1px 2px rgba(26,25,22,0.04);
+
+  /* 字體 */
   --font-display: 'Playfair Display', 'Noto Sans TC', serif;
   --font-body:    'Outfit', 'Noto Sans TC', sans-serif;
 
-  --film-bar:     #1C1C1A;
+  /* 膠捲 */
+  --film-bar:     #181613;
   --film-hole:    rgba(255,255,255,0.14);
   --frame-w:      clamp(150px, 18vw, 240px);
-  --frame-gap:    3px;
+  --frame-gap:    4px;
 
-  --fs-display: clamp(3rem, 10vw, 7rem);
-  --fs-heading: clamp(1.75rem, 4vw, 3rem);
-  --fs-subhead: clamp(1.125rem, 2vw, 1.4rem);
-  --fs-body:    1rem;
-  --fs-caption: 0.875rem;
-  --fs-micro:   0.75rem;
+  /* 字級 */
+  --fs-display:  clamp(3rem, 11vw, 7.5rem);
+  --fs-heading:  clamp(1.75rem, 4.2vw, 3rem);
+  --fs-subhead:  clamp(1.0625rem, 2vw, 1.4rem);
+  --fs-body:     0.9375rem;
+  --fs-caption:  0.8125rem;
+  --fs-micro:    0.6875rem;
 
+  /* 安全区 */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --top-bar-h: 64px;
+  --top-bar-h: 60px;
+  --top-bar-h-compact: 50px;
   --bottom-nav-h: 64px;
 
   --content-w: 920px;
 
-  --ease-out:     cubic-bezier(0, 0, 0.2, 1);
-  --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
-  --ease-out-back: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  /* === 動畫時長階梯 === */
+  --dur-instant: 90ms;
+  --dur-fast:    180ms;
+  --dur-base:    320ms;
+  --dur-page:    560ms;
 
-  --radius-sm: 8px;
-  --radius-xl: 28px;
+  /* === easing === */
+  --ease-out:        cubic-bezier(0, 0, 0.2, 1);
+  --ease-out-expo:   cubic-bezier(0.19, 1, 0.22, 1);
+  --ease-out-back:   cubic-bezier(0.175, 0.885, 0.32, 1.18);
+  --ease-out-quart:  cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-spring:     cubic-bezier(0.32, 1.45, 0.5, 1);
+  --ease-overshoot:  cubic-bezier(0.34, 1.36, 0.4, 1);
+
+  /* === 圓角階層 === */
+  --radius-xs:  6px;
+  --radius-sm:  10px;
+  --radius-md:  16px;
+  --radius-xl:  24px;
+  --radius-2xl: 32px;
   --radius-full: 9999px;
 
-  --type-sight-bg: #F5F0E8;
-  --type-sight-bar: #B8956A;
-  --type-food-bg: #F9F3EE;
-  --type-food-bar: #C4654A;
-  --type-transit-bg: #F0F0F0;
-  --type-transit-bar: #9E9E9E;
-  --type-hotel-bg: #EEF2F5;
-  --type-hotel-bar: #5C7A8A;
-  --type-shop-bg: #F3F0F8;
-  --type-shop-bar: #8B6CB0;
-  --type-other-bg: var(--bg-raised);
-  --type-other-bar: var(--border-strong);
+  /* === Type 色票四件組 === */
+  --type-sight-bar:   #B58E5A;
+  --type-sight-bg:    #F3ECDF;
+  --type-sight-glow:  rgba(181, 142, 90, 0.16);
+
+  --type-food-bar:    #C46347;
+  --type-food-bg:     #FAF0E9;
+  --type-food-glow:   rgba(196, 99, 71, 0.16);
+
+  --type-transit-bar: #6B7882;
+  --type-transit-bg:  #ECF0F2;
+  --type-transit-glow:rgba(107, 120, 130, 0.16);
+
+  --type-hotel-bar:   #547B82;
+  --type-hotel-bg:    #EAF0F1;
+  --type-hotel-glow:  rgba(84, 123, 130, 0.16);
+
+  --type-shop-bar:    #806BA0;
+  --type-shop-bg:     #F0EDF4;
+  --type-shop-glow:   rgba(128, 107, 160, 0.16);
+
+  --type-other-bar:   var(--border-strong);
+  --type-other-bg:    var(--bg-raised);
+  --type-other-glow:  rgba(189, 181, 167, 0.14);
+
+  /* 主動日提示 */
+  --today-ring: var(--accent);
 }

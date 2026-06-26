@@ -1,30 +1,24 @@
 <template>
   <div class="day-chips">
-    <button 
-      v-for="(day, i) in days" 
+    <button
+      v-for="(day, i) in days"
       :key="i"
-      type="button" 
-      class="day-chip" 
+      type="button"
+      class="day-chip"
       :class="{ active: i === selectedDay }"
       @click="emit('update:selectedDay', i)"
     >
-      Day {{ day.dayNumber }} · {{ getChipLabel(day.date) }} ({{ day.dayOfWeek }})
+      <span class="chip-day">Day {{ day.dayNumber }}</span>
+      <span class="chip-date">{{ getChipLabel(day.date) }} · {{ day.dayOfWeek }}</span>
     </button>
   </div>
 </template>
 
 <script setup>
 const props = defineProps({
-  days: {
-    type: Array,
-    required: true
-  },
-  selectedDay: {
-    type: Number,
-    required: true
-  }
+  days: { type: Array, required: true },
+  selectedDay: { type: Number, required: true }
 })
-
 const emit = defineEmits(['update:selectedDay'])
 
 function getChipLabel(dateStr) {
@@ -35,15 +29,30 @@ function getChipLabel(dateStr) {
 
 <style scoped>
 .day-chips {
-  display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1rem;
+  display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1.25rem;
 }
 .day-chip {
-  padding: 6px 12px; border-radius: var(--radius-full); font-size: 13px;
+  display: inline-flex; flex-direction: column; gap: 2px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
   background: var(--bg-deep); color: var(--text-secondary);
-  border: 1px solid transparent; transition: all .2s;
+  border: 1px solid transparent;
+  transition: transform .18s var(--ease-out-back), background .2s, color .2s, box-shadow .2s;
+  text-align: left;
+  line-height: 1;
 }
+.day-chip:active { transform: scale(0.93); }
 .day-chip.active {
   background: var(--accent-soft); color: var(--accent-deep);
-  border-color: var(--accent-glow); font-weight: 500;
+  border-color: var(--accent-glow);
+  box-shadow: var(--shadow-xs);
 }
+.chip-day {
+  font-size: 12px; font-weight: 600; letter-spacing: .04em;
+}
+.chip-date {
+  font-size: 10px; opacity: 0.7; font-variant-numeric: tabular-nums;
+  letter-spacing: .04em;
+}
+.day-chip.active .chip-date { opacity: 0.85; }
 </style>
