@@ -140,16 +140,11 @@ function staggerCards() {
 
 .timeline {
   display: flex; flex-direction: column; gap: .85rem;
-  position: relative; padding-left: 28px;
-}
-.timeline::before {
-  content: ''; position: absolute; left: 11px; top: 12px; bottom: 12px; width: 2px;
-  background: linear-gradient(180deg, var(--accent) 0%, var(--accent) 8%, var(--border-light) 8%, var(--border-light) 100%);
-  z-index: -1; border-radius: 2px;
+  position: relative;
 }
 
 .timeline-empty {
-  padding: 4rem 0; text-align: center; padding-left: 0;
+  padding: 4rem 0; text-align: center;
 }
 .empty-title {
   font-family: var(--font-display); font-size: clamp(1.4rem, 4vw, 2rem);
@@ -162,8 +157,7 @@ function staggerCards() {
 }
 
 @media (max-width: 600px) {
-  .timeline { padding-left: 22px; }
-  .timeline::before { left: 7px; }
+  .timeline { gap: .72rem; }
 }
 
 .day-enter { animation: dayEnter .4s var(--ease-out) both; }

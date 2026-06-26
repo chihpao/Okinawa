@@ -1,10 +1,5 @@
 <template>
   <div class="activity-item" :class="actTypeClass" @click="onCardTap">
-    <div class="act-rail">
-      <span class="rail-dot"></span>
-      <span class="rail-bar" :style="barStyle"></span>
-    </div>
-
     <div class="act-card">
       <div class="act-top">
         <div class="act-time">
@@ -79,15 +74,11 @@ function onCardTap() {
   if (window.matchMedia('(hover: hover)').matches) return
   actionsOpen.value = !actionsOpen.value
 }
-
-const barStyle = computed(() => {
-  return { '--bar-color': `var(--${actType.value.replace('act-','type-')}-bar)` }
-})
 </script>
 
 <style scoped>
 .activity-item {
-  display: flex; gap: 16px; position: relative;
+  position: relative;
   padding-right: 4px;
 }
 
@@ -243,9 +234,6 @@ const barStyle = computed(() => {
 .act-other { --bar-color: var(--type-other-bar); }
 
 @media (max-width: 600px) {
-  .activity-item { gap: 10px; }
-  .act-rail { flex: 0 0 14px; }
-  .rail-dot { width: 8px; height: 8px; top: 14px; }
   .act-card { padding: .85rem .9rem; border-radius: 14px; }
   .act-time { font-size: .95rem; }
   .act-title { font-size: 1rem; }

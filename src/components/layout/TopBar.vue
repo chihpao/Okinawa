@@ -1,22 +1,18 @@
 <template>
   <header class="top-bar" :class="{ hidden: uiStore.isNavHidden, 'day-view-mode': uiStore.viewMode === 'day', 'compact': isCompact }" id="topBar">
-    <button
-      v-if="uiStore.viewMode === 'day'"
-      type="button"
-      class="back-btn"
-      @click="emit('go-home')"
-      aria-label="回首頁"
-    >
-      <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.4" fill="none"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-    </button>
-    <div class="brand" @click="emit('go-home')" id="brandHome">
-      <span class="brand-text">OKINAWA</span>
-      <span class="brand-year">2026</span>
-    </div>
-    <div class="top-day-nav" v-if="uiStore.viewMode === 'day'" ref="dayNav">
-      <div class="top-day-track" id="topDayTrack">
-        <span class="tab-indicator" :style="indicatorStyle"></span>
-        <button
+    <div class="top-left" v-if="uiStore.viewMode === 'day'">
+      <button
+        type="button"
+        class="back-btn"
+        @click="emit('go-home')"
+        aria-label="回首頁"
+      >
+        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.4" fill="none"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      </button>
+      <div class="top-day-nav" ref="dayNav">
+        <div class="top-day-track" id="topDayTrack">
+          <span class="tab-indicator" :style="indicatorStyle"></span>
+<button
           v-for="(day, i) in tripStore.days"
           :key="i"
           type="button"
@@ -25,9 +21,15 @@
           :ref="(el) => { if (el) tabEls[i] = el }"
           @click="uiStore.switchDay(i)"
         >
-          {{ getTabLabel(day.date) }}
+          <span class="tab-icon" v-html="dayIcons[i]"></span>
+          <span class="tab-label">{{ getTabLabel(day.date) }}</span>
         </button>
+        </div>
       </div>
+    </div>
+    <div class="brand" @click="emit('go-home')" id="brandHome">
+      <span class="brand-text">OKINAWA</span>
+      <span class="brand-year">2026</span>
     </div>
     <div class="sync-indicator" :data-state="tripStore.syncState" id="syncIndicator">
       <span class="sync-dot"></span>
@@ -49,6 +51,20 @@ const dayNav = ref(null)
 const tabEls = ref([])
 const indicatorStyle = ref({ transform: 'translateX(0)', width: '0px' })
 const isCompact = ref(false)
+
+// 每天行程主題對應的小圖示（抵達／水族館／世界遺產／購物／回程）
+const dayIcons = [
+  // 8/13 抵達 — 飛機降落
+  `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20.5h18"/><path d="M20.5 4 5 11.2l5.4 1.7L9 19l1.3.3 3-4.7 5-1.6 1.6-1.5z"/></svg>`,
+  // 8/14 水族館 — 魚
+  `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12c2-3 5.5-4 9-4s6 1 7 4c-1 3-3.5 4-7 4s-7-1-9-4z"/><path d="M20 12 23 9v6z"/><circle cx="7.5" cy="11" r="0.5" fill="currentColor" stroke="none"/></svg>`,
+  // 8/15 世界遺產 — 鳥居
+  `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4.5Q12 1.5 21.5 4.5"/><path d="M4.5 7.5h15"/><path d="M7 7.5v12.5"/><path d="M17 7.5v12.5"/><path d="M7 12.5h10"/></svg>`,
+  // 8/16 購物 — 購物袋
+  `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 8.5h13l-1 11.5h-11z"/><path d="M9 8.5V6.5a3 3 0 0 1 6 0v2"/></svg>`,
+  // 8/17 回程 — 飛機起飛
+  `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20.5h18"/><path d="M3.5 17 19 9.8l-5.4-1.7L15 5 13.7 4.7l-3 4.7-5 1.6L4.1 12.5z"/></svg>`,
+]
 
 function getTabLabel(dateStr) {
   const date = new Date(dateStr + 'T00:00:00')
@@ -110,8 +126,11 @@ onBeforeUnmount(() => {
 }
 .brand-year { color: var(--accent); font-style: italic; font-weight: 600; }
 
+.top-left { flex: 1; display: flex; align-items: center; gap: .5rem; min-width: 0; }
+
 .back-btn {
-  display: none; align-items: center; justify-content: center;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
   width: 36px; height: 36px; border-radius: 50%;
   color: var(--text-primary);
   transition: background .2s, transform .2s var(--ease-out-back);
@@ -119,10 +138,12 @@ onBeforeUnmount(() => {
 .back-btn:hover { background: var(--bg-deep); }
 .back-btn:active { transform: translateX(-3px) scale(0.9); }
 
-.top-day-nav { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+.top-bar.day-view-mode .brand { display: none; }
+
+.top-day-nav { flex: 1; display: flex; align-items: center; min-width: 0; }
 .top-day-track {
   position: relative;
-  display: flex; gap: 2px;
+  display: flex; width: 100%;
   background: var(--bg-deep); padding: 4px;
   border-radius: var(--radius-full);
 }
@@ -136,13 +157,22 @@ onBeforeUnmount(() => {
 }
 .top-day-tab {
   position: relative; z-index: 1;
-  padding: .32rem .75rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: .35rem;
+  flex: 1 1 0; min-width: 0;
+  padding: .3rem .4rem;
   font-size: var(--fs-caption); font-weight: 500;
   border-radius: var(--radius-full);
   color: var(--text-secondary);
   transition: color .25s var(--ease-out);
   font-variant-numeric: tabular-nums;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
 }
+.tab-icon { display: inline-flex; flex-shrink: 0; }
+.tab-icon :deep(svg) { display: block; }
+.tab-label { text-align: center; }
 .top-day-tab.active { color: var(--text-primary); }
 
 .sync-indicator { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--text-tertiary); letter-spacing: .05em; text-transform: uppercase; }
@@ -156,12 +186,11 @@ onBeforeUnmount(() => {
 .sync-indicator[data-state='offline'] .sync-dot { background: #9E9E9E; }
 
 @media (max-width: 600px) {
-  .top-bar.day-view-mode .brand { display: none; }
-  .top-bar.day-view-mode .back-btn { display: flex; }
-  .top-bar.day-view-mode .top-day-nav {
-    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-  }
   .top-bar.day-view-mode .sync-percent { display: none; }
-  .top-day-nav { display: none; }
+  .top-day-tab { padding: .25rem .2rem; font-size: .66rem; gap: .2rem; }
+  .tab-icon :deep(svg) { width: 12px; height: 12px; }
+  .top-day-track { padding: 3px; }
+  .top-left { gap: .35rem; }
+  .back-btn { width: 32px; height: 32px; }
 }
 </style>
